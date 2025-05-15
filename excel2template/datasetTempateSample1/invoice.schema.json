@@ -1,0 +1,264 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/NIMS_TRIAL_DATASETTEMPLATE-1/invoice.schema.json",
+    "description": "RDEトライアルデータセットテンプレート-1",
+    "type": "object",
+    "required": [
+        "custom",
+        "sample"
+    ],
+    "properties": {
+        "custom": {
+            "type": "object",
+            "label": {
+                "ja": "固有情報",
+                "en": "Custom Information"
+            },
+            "required": [
+                "measurement_date",
+                "invoice_string1",
+                "is_divided",
+                "is_private_raw"
+            ],
+            "properties": {
+                "measurement_date": {
+                    "label": {
+                        "ja": "測定日時",
+                        "en": "measurement date"
+                    },
+                    "type": "string",
+                    "format": "date",
+                    "description": "測定日時(必須)",
+                    "examples": [
+                        "2024-07-17"
+                    ],
+                    "options": {
+                        "placeholder": {
+                            "ja": "測定日時をYYYY/MM/DD形式で入力してください(必須項目です)"
+                        }
+                    }
+                },
+                "invoice_number1": {
+                    "label": {
+                        "ja": "送状状数値入力値1",
+                        "en": "invoice_number1"
+                    },
+                    "type": "number",
+                    "examples": [
+                        99.0
+                    ],
+                    "options": {
+                        "placeholder": {
+                            "ja": "数値を入力してください"
+                        }
+                    },
+                    "maximum": 100.0,
+                    "minimum": -100.0
+                },
+                "invoice_number2": {
+                    "label": {
+                        "ja": "送状状数値入力値2",
+                        "en": "invoice_number2"
+                    },
+                    "type": "number",
+                    "examples": [
+                        2.0
+                    ],
+                    "options": {
+                        "placeholder": {
+                            "ja": "数値を入力してください"
+                        }
+                    }
+                },
+                "invoice_string1": {
+                    "label": {
+                        "ja": "送状文字入力値1",
+                        "en": "invoice_string1"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "送状文字入力値1必須"
+                    ],
+                    "options": {
+                        "placeholder": {
+                            "ja": "文字列を入力してください(必須項目です)"
+                        }
+                    },
+                    "maxLength": 128
+                },
+                "inboice_string2": {
+                    "label": {
+                        "ja": "送状文字入力値2",
+                        "en": "invoice_string2"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "送状文字入力値2"
+                    ],
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 3,
+                        "placeholder": {
+                            "ja": "文字列を入力してください"
+                        }
+                    }
+                },
+                "invoice_list1": {
+                    "label": {
+                        "ja": "送状状選択値1",
+                        "en": "invoice_list1"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "selectable1"
+                    ],
+                    "enum": [
+                        "selectable1",
+                        "selectable2",
+                        "selectable3"
+                    ],
+                    "options": {
+                        "placeholder": {
+                            "ja": "選択肢から選択してください"
+                        }
+                    }
+                },
+                "is_divided": {
+                    "label": {
+                        "ja": "系列ごとの登録の有無",
+                        "en": "is_divided"
+                    },
+                    "type": "string",
+                    "default": "divided",
+                    "enum": [
+                        "divided",
+                        "not_divided"
+                    ]
+                },
+                "is_private_raw": {
+                    "label": {
+                        "ja": "RAWデータの共有の可否",
+                        "en": "is_private_raw"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "share"
+                    ],
+                    "default": "share",
+                    "enum": [
+                        "share",
+                        "non_share"
+                    ]
+                }
+            }
+        },
+        "sample": {
+            "type": "object",
+            "label": {
+                "ja": "試料情報",
+                "en": "Sample Information"
+            },
+            "properties": {
+                "generalAttributes": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "termId"
+                            ],
+                            "properties": {
+                                "termId": {
+                                    "const": "3adf9874-7bcb-e5f8-99cb-3d6fd9d7b55e"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "termId"
+                            ],
+                            "properties": {
+                                "termId": {
+                                    "const": "0aadfff2-37de-411f-883a-38b62b2abbce"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "termId"
+                            ],
+                            "properties": {
+                                "termId": {
+                                    "const": "0444cf53-db47-b208-7b5f-54429291a140"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "termId"
+                            ],
+                            "properties": {
+                                "termId": {
+                                    "const": "e2d20d02-2e38-2cd3-b1b3-66fdb8a11057"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "specificAttributes": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "classId",
+                                "termId"
+                            ],
+                            "properties": {
+                                "classId": {
+                                    "const": "52148afb-6759-23e8-c8b8-33912ec5bfcf"
+                                },
+                                "termId": {
+                                    "const": "70c2c751-5404-19b7-4a5e-981e6cebbb15"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "classId",
+                                "termId"
+                            ],
+                            "properties": {
+                                "classId": {
+                                    "const": "961c9637-9b83-0e9d-e60e-ffc1e2517afd"
+                                },
+                                "termId": {
+                                    "const": "70c2c751-5404-19b7-4a5e-981e6cebbb15"
+                                }
+                            }
+                        },
+                        {
+                            "type": "object",
+                            "required": [
+                                "classId",
+                                "termId"
+                            ],
+                            "properties": {
+                                "classId": {
+                                    "const": "01cb3c01-37a4-5a43-d8ca-f523ca99a75b"
+                                },
+                                "termId": {
+                                    "const": "dc27a956-263e-f920-e574-5beec912a247"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,111 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/NIMS_TRIAL_DATASETTEMPLATE-1/catalog.schema.json",
+    "type": "object",
+    "required": [
+        "catalog"
+    ],
+    "description": "NIMS_TRIAL_DATASETTEMPLATE-1",
+    "properties": {
+        "catalog": {
+            "type": "object",
+            "label": {
+                "ja": "RDEトライアルデータセットテンプレート-1",
+                "en": "RDE trial datasettemplate-1"
+            },
+            "required": [],
+            "properties": {
+                "dataset_title": {
+                    "label": {
+                        "ja": "データセット名",
+                        "en": "Dataset Title"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "データセット名"
+                    ]
+                },
+                "abstract": {
+                    "label": {
+                        "ja": "概要",
+                        "en": "Abstract"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "アブストラクト"
+                    ]
+                },
+                "data_creator": {
+                    "label": {
+                        "ja": "作成者",
+                        "en": "Data Creator"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "ななしのごんべい"
+                    ]
+                },
+                "experimental_apparatus": {
+                    "label": {
+                        "ja": "使用装置",
+                        "en": "Experimental Apparatus"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "Experimental Apparatus"
+                    ]
+                },
+                "data_distribution": {
+                    "label": {
+                        "ja": "データの再配布",
+                        "en": "Data Distribution"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "データの概要"
+                    ]
+                },
+                "raw_data_type": {
+                    "label": {
+                        "ja": "データの種類",
+                        "en": "Raw Data Type"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "RAWデータ諸元について"
+                    ]
+                },
+                "stored_data": {
+                    "label": {
+                        "ja": "格納データ",
+                        "en": "Stored Data"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "Stored Data"
+                    ]
+                },
+                "remarks": {
+                    "label": {
+                        "ja": "備考",
+                        "en": "Remarks"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考"
+                    ]
+                },
+                "references": {
+                    "label": {
+                        "ja": "参考論文",
+                        "en": "References"
+                    },
+                    "type": "string",
+                    "examples": [
+                        "https://nims.go.jp"
+                    ]
+                }
+            }
+        }
+    }
+}

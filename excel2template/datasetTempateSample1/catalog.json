@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "catalog": {
+    "dataset_title": "データセット名",
+    "abstract": "アブストラクト",
+    "data_creator": "ななしのごんべい",
+    "experimental_apparatus": "Experimental Apparatus",
+    "data_distribution": "データの概要",
+    "raw_data_type": "RAWデータ諸元について",
+    "stored_data": "Stored Data",
+    "remarks": "備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考備考",
+    "references": "https://nims.go.jp"
+  }
+}

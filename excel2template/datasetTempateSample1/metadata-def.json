@@ -1,0 +1,229 @@
+{
+    "data_title": {
+        "name": {
+            "ja": "データ名",
+            "en": "data title"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "order": 1,
+        "mode": "Derived from data",
+        "original_name": "data_title"
+    },
+    "measurement_date": {
+        "name": {
+            "ja": "測定日時",
+            "en": "measurement date"
+        },
+        "schema": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "order": 2,
+        "mode": "Derived from data",
+        "original_name": "measurement_date"
+    },
+    "x_label": {
+        "name": {
+            "ja": "独立変数(X軸ラベル)",
+            "en": "x-label"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "order": 3,
+        "mode": "Derived from data",
+        "original_name": "x_label"
+    },
+    "y_label": {
+        "name": {
+            "ja": "従属変数(Y軸ラベル)",
+            "en": "y-label"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "order": 4,
+        "mode": "Derived from data",
+        "original_name": "y_label"
+    },
+    "series_number": {
+        "name": {
+            "ja": "系列数",
+            "en": "series number"
+        },
+        "schema": {
+            "type": "integer"
+        },
+        "order": 5,
+        "unit": "PCS",
+        "mode": "Derived from data",
+        "original_name": "series_number"
+    },
+    "series_name": {
+        "name": {
+            "ja": "系列名",
+            "en": "series name"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "order": 6,
+        "mode": "Analysis value",
+        "variable": 1,
+        "original_name": "series_name"
+    },
+    "series_data_count": {
+        "name": {
+            "ja": "系列ごとデータ数",
+            "en": "data count by series"
+        },
+        "schema": {
+            "type": "integer"
+        },
+        "order": 7,
+        "unit": "PCS",
+        "mode": "Analysis value",
+        "variable": 1,
+        "original_name": "series_data_count"
+    },
+    "series_data_mean": {
+        "name": {
+            "ja": "系列ごと平均値",
+            "en": "data mean by series"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "order": 8,
+        "mode": "Analysis value",
+        "variable": 1,
+        "original_name": "series_data_mean"
+    },
+    "series_data_median": {
+        "name": {
+            "ja": "系列ごと中央値",
+            "en": "data median by series"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "order": 9,
+        "mode": "Analysis value",
+        "variable": 1,
+        "original_name": "series_data_median"
+    },
+    "series_data_max": {
+        "name": {
+            "ja": "系列ごと最大値",
+            "en": "data max by series"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "order": 10,
+        "mode": "Analysis value",
+        "variable": 1,
+        "original_name": "series_data_max"
+    },
+    "series_data_min": {
+        "name": {
+            "ja": "系列ごと最小値",
+            "en": "data min by series"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "order": 11,
+        "mode": "Analysis value",
+        "variable": 1,
+        "original_name": "series_data_min"
+    },
+    "series_data_stdev": {
+        "name": {
+            "ja": "系列ごと標準偏差",
+            "en": "data stdev by series"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "order": 12,
+        "mode": "Analysis value",
+        "variable": 1,
+        "original_name": "series_data_stdev"
+    },
+    "invoice_measurement_date": {
+        "name": {
+            "ja": "送状状測定日時",
+            "en": "measurement date from invoice"
+        },
+        "schema": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "order": 13,
+        "mode": "Invoice",
+        "original_name": "invoice measurement date"
+    },
+    "invoice_number1": {
+        "name": {
+            "ja": "送状状数値入力値1",
+            "en": "invoice_number1"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "order": 14,
+        "mode": "Invoice",
+        "original_name": "invoice_number1"
+    },
+    "invoice_number2": {
+        "name": {
+            "ja": "送状状数値入力値2",
+            "en": "invoice_number2"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "order": 15,
+        "mode": "Invoice",
+        "original_name": "invoice_number2"
+    },
+    "invoice_string1": {
+        "name": {
+            "ja": "送状文字入力値1",
+            "en": "invoice_string1"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "order": 16,
+        "mode": "Invoice",
+        "original_name": "invoice_string1"
+    },
+    "inboice_string2": {
+        "name": {
+            "ja": "送状文字入力値2",
+            "en": "inboice_string2"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "order": 17,
+        "mode": "Invoice",
+        "original_name": "inboice_string2"
+    },
+    "invoice_list1": {
+        "name": {
+            "ja": "送状状選択値1",
+            "en": "invoice_list1"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "order": 18,
+        "mode": "Invoice",
+        "original_name": "invoice_list1"
+    }
+}
