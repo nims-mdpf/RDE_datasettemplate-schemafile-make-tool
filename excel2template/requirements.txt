@@ -1,0 +1,11 @@
+altgraph==0.17.4
+et-xmlfile==1.1.0
+importlib_metadata==8.2.0
+macholib==1.16.3
+openpyxl==3.1.5
+packaging==24.1
+pyinstaller==6.9.0
+pyinstaller-hooks-contrib==2024.7
+python-dateutil==2.9.0.post0
+six==1.16.0
+zipp==3.19.2

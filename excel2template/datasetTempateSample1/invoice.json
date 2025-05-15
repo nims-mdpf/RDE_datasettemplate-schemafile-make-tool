@@ -1,0 +1,68 @@
+{
+  "datasetId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "basic": {
+    "dateSubmitted": "2024-11-22",
+    "dataOwnerId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "dataName": "%%data_name%%",
+    "instrumentId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "experimentId": "%%experiment_id%%",
+    "description": "%%description%%"
+  },
+  "custom": {
+    "measurement_date": "2024-07-17",
+    "invoice_number1": 99.0,
+    "invoice_number2": 2.0,
+    "invoice_string1": "送状文字入力値1必須",
+    "inboice_string2": "送状文字入力値2",
+    "invoice_list1": "selectable1",
+    "is_divided": "divided",
+    "is_private_raw": "share"
+  },
+  "sample": {
+    "sampleId": "",
+    "names": [
+      "NIMS_TRIAL_試料"
+    ],
+    "ownerId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "composition": "H2O",
+    "referenceUrl": "試料参考URL",
+    "related_samples": "null",
+    "tags": "null",
+    "description": "試料の説明",
+    "generalAttributes": [
+      {
+        "termId": "3adf9874-7bcb-e5f8-99cb-3d6fd9d7b55e",
+        "value": "試料の一般名称"
+      },
+      {
+        "termId": "0aadfff2-37de-411f-883a-38b62b2abbce",
+        "value": "試料の化学組成"
+      },
+      {
+        "termId": "0444cf53-db47-b208-7b5f-54429291a140",
+        "value": "試料の試料分類"
+      },
+      {
+        "termId": "e2d20d02-2e38-2cd3-b1b3-66fdb8a11057",
+        "value": "試料のCAS番号"
+      }
+    ],
+    "specificAttributes": [
+      {
+        "classId": "52148afb-6759-23e8-c8b8-33912ec5bfcf",
+        "termId": "70c2c751-5404-19b7-4a5e-981e6cebbb15",
+        "value": "試料_半導体_名称"
+      },
+      {
+        "classId": "961c9637-9b83-0e9d-e60e-ffc1e2517afd",
+        "termId": "70c2c751-5404-19b7-4a5e-981e6cebbb15",
+        "value": "試料_セラミック_名称"
+      },
+      {
+        "classId": "01cb3c01-37a4-5a43-d8ca-f523ca99a75b",
+        "termId": "dc27a956-263e-f920-e574-5beec912a247",
+        "value": "試料_有機材料_分子量"
+      }
+    ]
+  }
+}
