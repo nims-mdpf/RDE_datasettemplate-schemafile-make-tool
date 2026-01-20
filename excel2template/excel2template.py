@@ -1,11 +1,17 @@
 # -------------------------------------------------
-# excel2template.py
+# excel2template.py for RDE developers
+# version 1.3.0 2026/01/20
+
 # This program is for creating dataset template definition files in RDE.
 #
 # Copyright (c) 2025, MDPF(Materials Data Platform), NIMS
 #
 # This software is released under the MIT License.
 # -------------------------------------------------
+
+__author__ = "NIMS MDPF"
+__version__ = "1.3.0"
+__license__ = "MIT"
 
 from pathlib import Path
 import json
@@ -15,6 +21,7 @@ from datetime import datetime
 from dateutil import parser
 import re
 import argparse
+import sys
 
 reader.excel.warnings.simplefilter("ignore")
 
@@ -119,8 +126,7 @@ def get_validated_value(param, d, expected_dtypes, outfile):
     # enumに値がある場合は、vがenumに含まれる必要あり
     if enum and v not in enum:
         raise ExcelError(
-            "JSONに格納される値が、enumの値に含まれていません。"
-            f"{enum=}, {sheet_info}"
+            f"JSONに格納される値が、enumの値に含まれていません。{enum=}, {sheet_info}"
         )
 
     # vの型をdtypeに変更する
@@ -275,12 +281,10 @@ def convert_metadata_def(wb, output_dir):
 
     # json形式で整理する
     jdata = defaultdict(dict)
-    order = 0
     for d in data:
         if d["output"] == "OFF":
             continue
 
-        order += 1
         jdata[d["parameter_name"]]["name"] = defaultdict(dict)
         jdata[d["parameter_name"]]["schema"] = defaultdict(dict)
 
@@ -291,7 +295,8 @@ def convert_metadata_def(wb, output_dir):
         # データ型
         jdata[d["parameter_name"]]["schema"]["type"] = d["type"]
         # 表示順序
-        jdata[d["parameter_name"]]["order"] = order
+        if ("order" in d) and d["order"] != "None" and len(d["order"].strip()) > 0:
+            jdata[d["parameter_name"]]["order"] = int(d["order"])
         # フォーマット
         if check_value(d["format"]):
             jdata[d["parameter_name"]]["schema"]["format"] = d["format"]
@@ -308,7 +313,7 @@ def convert_metadata_def(wb, output_dir):
         if check_value(d["mode"]):
             jdata[d["parameter_name"]]["mode"] = d["mode"]
         # Variable
-        if check_value(d["variable"], boolean=True):
+        if check_value(d["variable"]):
             jdata[d["parameter_name"]]["variable"] = 1
         # 固定値
         if check_value(d["default"], boolean=True):
@@ -316,8 +321,14 @@ def convert_metadata_def(wb, output_dir):
                 d["type"], d["sample"]
             )
         # 装置出力
-        if check_value(d["original_name"]):
+        if ("original_name" in d) and check_value(d["original_name"]):
             jdata[d["parameter_name"]]["original_name"] = d["original_name"]
+        if ("original_type" in d) and check_value(d["original_type"]):
+            jdata[d["parameter_name"]]["original_type"] = d["original_type"]
+        if ("originalName" in d) and check_value(d["originalName"]):
+            jdata[d["parameter_name"]]["originalName"] = d["originalName"]
+        if ("originalType" in d) and check_value(d["originalType"]):
+            jdata[d["parameter_name"]]["originalType"] = d["originalType"]
 
     # JSON形式で出力
     json_dump(jdata, outfile)
@@ -388,8 +399,12 @@ def _convert_invoice_schema_impl(rtn_v):
 
     # ルート部分
     # $schema
+    if (common_data["$schema"] == "None") or (len(common_data["$schema"].strip()) == 0):
+        raise ExcelError(f"要件定義（invoice.schema.json）の$schema、$id値は必須です。")
     jdata["$schema"] = common_data["$schema"]
     # $id
+    if (common_data["$id"] == "None") or (len(common_data["$id"].strip()) == 0):
+        raise ExcelError(f"要件定義（invoice.schema.json）の$schema、$id値は必須です。")
     jdata["$id"] = common_data["$id"]
     # description
     if (not common_data["description"] is None) and (
@@ -500,7 +515,7 @@ def _convert_invoice_schema_impl(rtn_v):
             if check_value(d["examples"]):
                 jdata["properties"]["custom"]["properties"][d["parameter_name"]][
                     "examples"
-                ] = [convert_value(d["type"], d["examples"])]
+                ] = convert_value(d["type"], d["examples"])
             # 初期値
             if check_value(d["default"]):
                 jdata["properties"]["custom"]["properties"][d["parameter_name"]][
@@ -515,7 +530,7 @@ def _convert_invoice_schema_impl(rtn_v):
             if check_value(d["enum"]):
                 jdata["properties"]["custom"]["properties"][d["parameter_name"]][
                     "enum"
-                ] = [convert_value(d["type"], v) for v in d["enum"].split(",")]
+                ] = [convert_value(d["type"], v.strip()) for v in d["enum"].split(",")]
             # テキストエリア
             if check_value(d["options/widget"]):
                 jdata["properties"]["custom"]["properties"][d["parameter_name"]][
@@ -599,7 +614,8 @@ def _convert_invoice_schema_impl(rtn_v):
                     "termId": {
                         "const": list(
                             filter(
-                                lambda x: x["dict.term.name_ja"] == d["term"], data_gt
+                                lambda x: x["dict.term.name_ja"] == d["term"],
+                                data_gt,
                             )
                         )[0]["term_id"]
                     }
@@ -816,9 +832,14 @@ def _convert_catalog_schema_impl(rtn_v):
 
     # ルート部分
     # $schema
+    if (common_data["$schema"] == "None") or (len(common_data["$schema"].strip()) == 0):
+        raise ExcelError(f"要件定義（catalog.schema.json）の$schema、$id値は必須です。")
     jdata["$schema"] = common_data["$schema"]
     # $id
+    if (common_data["$id"] == "None") or (len(common_data["$id"].strip()) == 0):
+        raise ExcelError(f"要件定義（catalog.schema.json）の$schema、$id値は必須です。")
     jdata["$id"] = common_data["$id"]
+
     # type
     jdata["type"] = "object"
     # required
@@ -1019,9 +1040,26 @@ def convert_catalog_example(wb, output_dir):
     _convert_catalog_example_impl(rtn_v)
 
 
+def check_first_page(wb):
+    ws = get_sheet(wb, "説明")
+    nmj = ws["B1"].value
+    nme = ws["B2"].value
+    tid = ws["B3"].value
+    if nmj is None or len(nmj) == 0:
+        raise ExcelError(f"説明シートのデータセットテンプレート名は必須です。")
+    if nme is None or len(nme) == 0:
+        raise ExcelError(f"説明シートのデータセットテンプレート名(英)は必須です。")
+    if tid is None or len(tid) == 0:
+        raise ExcelError(f"説明シートのデータセットテンプレートIDは必須です。")
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="output some JSON files from the Excel file."
+    )
+    parser.add_argument(
+        "--version", "-v", action="version", version="%(prog)s " + "%s" % __version__
     )
     parser.add_argument(
         "input",
@@ -1033,11 +1071,17 @@ def main():
 
     # 入力ファイルへのパス（リスト）
     excelfiles = args.input
+
     # 入力ファイルが指定されていない場合は直下のExcelファイルを全て処理する
     if not excelfiles:
         excelfiles = Path.cwd().glob("*.xlsx")
 
     for ef in excelfiles:
+        # 指定されたファイルの存在確認
+        path = Path(ef)
+        if not path.exists():
+            print(f"指定されたファイルがありません: {path}")
+            sys.exit(1)
         ef_path = Path(ef)
         print(ef_path.name + "の処理を開始します。")
 
@@ -1048,11 +1092,20 @@ def main():
         # Excelファイルを開く
         wb = load_workbook(ef_path, read_only=True, data_only=True)
 
+        # 説明ページの確認
+        try:
+            check_first_page(wb)
+        except Exception as e:
+            print(f" - 説明シートに記入漏れがありました。原因: {e}")
+
         # metadeta-def.jsonの出力
         convert_metadata_def(wb, output_dir)
 
         # invoice.schema.jsonの出力
-        convert_invoice_schema(wb, output_dir)
+        try:
+            convert_invoice_schema(wb, output_dir)
+        except Exception as e:
+            print(f" - invoice.schema.jsonの生成に失敗しました。原因: {e}")
 
         # invoice.jsonの出力
         try:
@@ -1061,7 +1114,10 @@ def main():
             print(f" - invoice.jsonの生成に失敗しました。原因: {e}")
 
         # catalog.schema.jsonの出力
-        convert_catalog_schema(wb, output_dir)
+        try:
+            convert_catalog_schema(wb, output_dir)
+        except Exception as e:
+            print(f" - catalog.schema.jsonの生成に失敗しました。原因: {e}")
 
         # catalog.jsonの出力
         try:

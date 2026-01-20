@@ -1,0 +1,45 @@
+{
+    "item1": {
+        "name": {
+            "ja": "item1",
+            "en": "item1"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "description": "文字列"
+    },
+    "item2": {
+        "name": {
+            "ja": "item2",
+            "en": "item2"
+        },
+        "schema": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "description": "日付文字列"
+    },
+    "item3": {
+        "name": {
+            "ja": "item3",
+            "en": "item3"
+        },
+        "schema": {
+            "type": "integer"
+        },
+        "unit": "pcs",
+        "description": "整数"
+    },
+    "item4": {
+        "name": {
+            "ja": "item4",
+            "en": "item4"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "unit": "nm",
+        "description": "実数"
+    }
+}

@@ -1,0 +1,59 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/RDEDatasetTemplateSheet_rde_template_tools_sample/invoice.schema.json",
+    "description": "rde_template_tools用サンプル: 送状定義",
+    "type": "object",
+    "required": [
+        "custom",
+        "sample"
+    ],
+    "properties": {
+        "custom": {
+            "type": "object",
+            "label": {
+                "ja": "固有情報",
+                "en": "Custom Information"
+            },
+            "required": [
+                "measurement_date"
+            ],
+            "properties": {
+                "measurement_date": {
+                    "label": {
+                        "ja": "測定日",
+                        "en": "measurement_date"
+                    },
+                    "type": "string",
+                    "format": "date",
+                    "description": "測定日",
+                    "examples": "2026-01-07"
+                }
+            }
+        },
+        "sample": {
+            "type": "object",
+            "label": {
+                "ja": "試料情報",
+                "en": "Sample Information"
+            },
+            "properties": {
+                "generalAttributes": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "termId"
+                            ],
+                            "properties": {
+                                "termId": {
+                                    "const": "3adf9874-7bcb-e5f8-99cb-3d6fd9d7b55e"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
