@@ -1,0 +1,32 @@
+{
+  "datasetId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "basic": {
+    "dateSubmitted": "2026-01-13",
+    "dataOwnerId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "dataName": "%%data_name%%",
+    "instrumentId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "experimentId": "%%experiment_id%%",
+    "description": "%%description%%"
+  },
+  "custom": {
+    "measurement_date": "2026-01-07"
+  },
+  "sample": {
+    "sampleId": "",
+    "names": [
+      "null"
+    ],
+    "ownerId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "composition": "null",
+    "referenceUrl": "null",
+    "related_samples": "null",
+    "tags": "null",
+    "description": "null",
+    "generalAttributes": [
+      {
+        "termId": "3adf9874-7bcb-e5f8-99cb-3d6fd9d7b55e",
+        "value": "null"
+      }
+    ]
+  }
+}

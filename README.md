@@ -21,18 +21,22 @@ RDE (Research Data Express) は、物質・材料についての研究データ�
 
 ## 動作環境
 
-* Windows実行系　Windows 10以上
-* ~~Mac OS実行系 Apple シリコン搭載~~　現在は提供しておりません
-* pythonコードの実行　Python 3.11以上
+* Windows実行系　Windows 10以上(pyintallerで作成)
+* Mac OS実行系(arm64)(pyintallerで作成)
+* pythonコードの実行確認はPython 3.13以上
+
+実行系の作成については[こちら](./excel2template/pyinstaller_build.md)を参照してください。
 
 <br />
 
 ## 操作方法
 
 * 取扱説明書を参考にご利用ください。
-* Windowsにて利用する場合は、excel2template/excel2template.exeを取得してください。
+* Windowsにて利用する場合は、excel2template/dist/excel2template.exeを利用してください。
+* Macにて利用する場合は、excel2template/dist/excel2templateを利用してください。
 * pythonのコードを利用して実行する場合は、excel2template/excel2template.pyを取得してください。
 * VScodeの追加機能はtemplate_viewerからtemplate-viewer-1.0.0.vsixを取得してください。
+* excel2templateのテストには、[RDEDatasetTemplateSheet_20251222_sample.xlsx](./excel2template/RDEDatasetTemplateSheet_20251222_sample.xlsx)を利用してください。生成結果は[こちら](./excel2template/RDEDatasetTemplateSheet_20251222_sample/)に掲載しています。
 
 <br />
 
