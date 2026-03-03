@@ -10,11 +10,14 @@ RDE (Research Data Express) は、物質・材料についての研究データ�
 - RDEのデータセットを開設、運用するためのデータセットテンプレートを構成するファイルを作成、プレビューするためのツールです
 - データセットテンプレートのうち、送り状スキーマファイル(invoice.schema.json)、メタデータ定義(metadata-def.json)を作成するとツールと、その結果をVScodeでプレビューするツールの２つで構成されます
 - エクセル形式のファイルに必要事項を入力することでjson形式のファイルを出力することができます
+- また、既存のテンプレートファイルからテンプレートを生成するためのエクセル書式ファイルを作成するツールもあります(template2excel参照)
 <br />
 
 ## 利用方法
 
   docsフォルダ内のファイルにてご確認ください。
+
+  template2excelについては[こちら](./template2excel/README.md)を参照してください。
 
 <br />
 
@@ -24,6 +27,7 @@ RDE (Research Data Express) は、物質・材料についての研究データ�
 * Windows実行系　Windows 10以上(pyintallerで作成)
 * Mac OS実行系(arm64)(pyintallerで作成)
 * pythonコードの実行確認はPython 3.13以上
+* template2excelについては実行系は配布していません
 
 実行系の作成については[こちら](./excel2template/pyinstaller_build.md)を参照してください。
 
