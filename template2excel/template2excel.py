@@ -3,7 +3,7 @@
 # -------------------------------------------------
 # template2excel.py
 #
-# This program reads an RDE template files 
+# This program reads an RDE template files
 #   and converts it into an Excel spreadsheet.
 #
 # Copyright (c) 2026, MDPF(Materials Data Platform), NIMS
@@ -37,7 +37,7 @@ from openpyxl.formatting.rule import FormulaRule
 from openpyxl.worksheet.datavalidation import DataValidation
 from openpyxl.utils import column_index_from_string, get_column_letter
 
-#from pprint import pprint
+# from pprint import pprint
 
 # 数式設定メモ:
 # 比較的新しいExcel関数や、OpenPyXLの内部仕様に含まれていない関数を使用する場合、関数名の前に _xlfn. を付ける
@@ -48,14 +48,16 @@ default_font_name = "BIZ UDPゴシック"
 _font = Font(name=default_font_name)
 {k: setattr(DEFAULT_FONT, k, v) for k, v in _font.__dict__.items()}
 
+
 class ExcelError(Exception):
     pass
 
-class CommonSettings():
-    ''' 本ツールの各種設定 (クラス変数としてのみ利用する) '''
+
+class CommonSettings:
+    """本ツールの各種設定 (クラス変数としてのみ利用する)"""
 
     # 生成ツールのバージョン
-    version = 'ver.2026.01.20(e)'
+    version = "ver.2026.01.20(e)"
 
     # セルのデフォルトの高さ
     default_height = 18.75
@@ -64,58 +66,74 @@ class CommonSettings():
     json_schema_url = "https://json-schema.org/draft/2020-12/schema"
 
     # Color code
-    black = '000000'
-    blue = '2F75B5'
-    gray = '595959'
-    green = '00BD50'
-    lightgray = 'D9D9D9'
-    orange = 'FCE4D6'
-    red = 'FF0000'
-    white = 'FFFFFF'
+    black = "000000"
+    blue = "2F75B5"
+    gray = "595959"
+    green = "00BD50"
+    lightgray = "D9D9D9"
+    orange = "FCE4D6"
+    red = "FF0000"
+    white = "FFFFFF"
     # 塗りつぶし
     fill = {
-        "blue"      : PatternFill(fgColor=f'{blue}', patternType='solid'), # 青
-        "gray"      : PatternFill(fgColor=f'{gray}', patternType='solid'), # 灰色
-        "green"     : PatternFill(fgColor=f'{green}', patternType='solid'), # 緑
-        "lightgray" : PatternFill(fgColor=f'{lightgray}', patternType='solid'), # 薄い灰色
-        "orange"    : PatternFill(fgColor=f'{orange}', patternType='solid'), # オレンジ
+        "blue": PatternFill(fgColor=f"{blue}", patternType="solid"),  # 青
+        "gray": PatternFill(fgColor=f"{gray}", patternType="solid"),  # 灰色
+        "green": PatternFill(fgColor=f"{green}", patternType="solid"),  # 緑
+        "lightgray": PatternFill(
+            fgColor=f"{lightgray}", patternType="solid"
+        ),  # 薄い灰色
+        "orange": PatternFill(fgColor=f"{orange}", patternType="solid"),  # オレンジ
     }
     # 条件付き書式での塗りつぶし
     pattern_fill = {
-        "gray" : PatternFill(start_color=f'{gray}', end_color=f'{gray}', fill_type='solid'),
-        "green" : PatternFill(start_color=f'{green}', end_color=f'{green}', fill_type='solid'),
-        "orange" : PatternFill(start_color=f'{orange}', end_color=f'{orange}', fill_type='solid'),
-        "red" : PatternFill(start_color=f'{red}', end_color=f'{red}', fill_type='solid'),
+        "gray": PatternFill(
+            start_color=f"{gray}", end_color=f"{gray}", fill_type="solid"
+        ),
+        "green": PatternFill(
+            start_color=f"{green}", end_color=f"{green}", fill_type="solid"
+        ),
+        "orange": PatternFill(
+            start_color=f"{orange}", end_color=f"{orange}", fill_type="solid"
+        ),
+        "red": PatternFill(start_color=f"{red}", end_color=f"{red}", fill_type="solid"),
     }
     # フォント
     font_params = {
-        "name" : "BIZ UDPゴシック",
+        "name": "BIZ UDPゴシック",
     }
     font = {
-        "default" : Font(**font_params),
-        "black" : Font(color=f'{black}', **font_params),
-        "lightgray" : Font(color=f'{lightgray}', **font_params),
-        "red" : Font(color=f'{red}', **font_params),
-        "white" : Font(color=f'{white}', **font_params),
-        "bold_black" : Font(color=f'{black}', b=True, **font_params),
+        "default": Font(**font_params),
+        "black": Font(color=f"{black}", **font_params),
+        "lightgray": Font(color=f"{lightgray}", **font_params),
+        "red": Font(color=f"{red}", **font_params),
+        "white": Font(color=f"{white}", **font_params),
+        "bold_black": Font(color=f"{black}", b=True, **font_params),
     }
     inline_font = {
-        "bold_black" : InlineFont(color=f'{black}', b=True),
-        "bold_blue" : InlineFont(color=f'{blue}', b=True),
-        "bold_red" : InlineFont(color=f'{red}', b=True),
+        "bold_black": InlineFont(color=f"{black}", b=True),
+        "bold_blue": InlineFont(color=f"{blue}", b=True),
+        "bold_red": InlineFont(color=f"{red}", b=True),
     }
     # 罫線
-    side = Side(style='thin', color=f'{black}')
+    side = Side(style="thin", color=f"{black}")
     border = {
-        "default" : Border(top=side, bottom=side, left=side, right=side),
+        "default": Border(top=side, bottom=side, left=side, right=side),
     }
 
-    def __init__(self):
-        ...
+    def __init__(self): ...
+
 
 class Field:
-    ''' 各シートの一覧内の、列生成用クラス '''
-    def __init__(self, name:str, title1:str, width:int = 15, title2:str = None, title2_color:str = 'black'):
+    """各シートの一覧内の、列生成用クラス"""
+
+    def __init__(
+        self,
+        name: str,
+        title1: str,
+        width: int = 15,
+        title2: str = None,
+        title2_color: str = "black",
+    ):
         self.name = name
         self.title1 = title1
         self.width = width
@@ -123,7 +141,7 @@ class Field:
         self.title2_color = title2_color
 
     def draw_title(self):
-        ''' 一覧の表題列を出力する機能 '''
+        """一覧の表題列を出力する機能"""
         title1 = self.title1
         title2 = self.title2
         if not title2:
@@ -132,80 +150,84 @@ class Field:
         title1 = title1 + "\n"
         title2_color = self.title2_color
         match title2_color:
-          case 'red':
-            inline_font = CommonSettings.inline_font['bold_red']
-          case 'blue':
-            inline_font = CommonSettings.inline_font['bold_blue']
-          case 'black':
-            inline_font = CommonSettings.inline_font['bold_black']
-          case _:
-            # default is Black
-            inline_font = CommonSettings.inline_font['bold_black']
-        return CellRichText([
-            title1,
-            TextBlock(inline_font, title2)
-        ])
+            case "red":
+                inline_font = CommonSettings.inline_font["bold_red"]
+            case "blue":
+                inline_font = CommonSettings.inline_font["bold_blue"]
+            case "black":
+                inline_font = CommonSettings.inline_font["bold_black"]
+            case _:
+                # default is Black
+                inline_font = CommonSettings.inline_font["bold_black"]
+        return CellRichText([title1, TextBlock(inline_font, title2)])
+
 
 class FieldsBase:
-    ''' フィールド設定の基底クラス '''
+    """フィールド設定の基底クラス"""
+
     config = configparser.ConfigParser(allow_no_value=True)
-    config.read_string('''
+    config.read_string("""
 
 [dummy]
 width = 15
 title1 = ダミー
 title2 = (自由記述)
 
-''')
-    def __init__(self, config:str = None):
+""")
+
+    def __init__(self, config: str = None):
         self.config = config if config is not None else self.__class__.config
         config = self.config
         fields = []
         f_args = {}
-        for i,name in enumerate(config.sections()):
+        for i, name in enumerate(config.sections()):
             f_args = {}
 
-            f_args['name'] = name
+            f_args["name"] = name
             try:
-                f_args['title1'] = config.get(name, 'title1')
+                f_args["title1"] = config.get(name, "title1")
             except:
                 ...
             try:
-                f_args['width'] = config.get(name, 'width')
+                f_args["width"] = config.get(name, "width")
             except:
                 ...
             try:
-                f_args['title2'] = config.get(name, 'title2')
+                f_args["title2"] = config.get(name, "title2")
             except:
                 ...
             try:
-                f_args['title2_color'] = config.get(name, 'title2_color')
+                f_args["title2_color"] = config.get(name, "title2_color")
             except:
                 ...
-            fields.append( Field( **f_args ) )
+            fields.append(Field(**f_args))
         self.fields = fields
 
     def list(self):
-        ''' 列名の一覧を返す ( for Debug ) '''
+        """列名の一覧を返す ( for Debug )"""
         config = self.config
         for i, name in enumerate(config.sections()):
             print(f'name : {name} widht: {config.get(name, "width")}')
 
     def get_field_list(self):
-        ''' 列名のリストを返す'''
+        """列名のリストを返す"""
         return self.config.sections()
 
     def get_index_by_name(self, name) -> int:
-        ''' 指定した名前の、位置番号(0,1,2...)を返す '''
+        """指定した名前の、位置番号(0,1,2...)を返す"""
         config = self.config
         name_index = next(
-             (i for i,col_name in enumerate(self.config.sections()) if col_name == name),
-             -1 # when not found
+            (
+                i
+                for i, col_name in enumerate(self.config.sections())
+                if col_name == name
+            ),
+            -1,  # when not found
         )
         return name_index
 
     def get_colno_by_name(self, name) -> int:
-        ''' カラム番号(1,2,3...)を返す '''
+        """カラム番号(1,2,3...)を返す"""
         name_index = self.get_index_by_name(name)
         if name_index >= 0:
             return name_index + 1
@@ -213,17 +235,19 @@ title2 = (自由記述)
             return -1
 
     def get_colletter_by_name(self, name) -> str:
-        ''' カラム名(A,B,C...)を返す '''
+        """カラム名(A,B,C...)を返す"""
         col_no = self.get_colno_by_name(name)
         if col_no >= 0:
             return get_column_letter(col_no)
         else:
             return None
 
+
 class FieldsMetadataDef(FieldsBase):
-    ''' metadata-defシートの列定義 '''
+    """metadata-defシートの列定義"""
+
     config = configparser.ConfigParser(allow_no_value=True)
-    config.read_string('''
+    config.read_string("""
 [category]
 width = 15
 title1 = カテゴリー
@@ -324,12 +348,14 @@ title2 = (選択リスト)
 width = 50
 title1 = サンプル
 
-''')
+""")
+
 
 class FieldsCatalogSchema(FieldsBase):
-    ''' catalog.schemaシートの列定義 '''
+    """catalog.schemaシートの列定義"""
+
     config = configparser.ConfigParser(allow_no_value=True)
-    config.read_string('''
+    config.read_string("""
 [header]
 width = 15
 title1 = ヘッダー
@@ -429,12 +455,14 @@ width = 30
 title1 = プレイスホルダ(英語)
 title2 = (自由記述)
 
-''')
+""")
+
 
 class FieldsInvoiceSchema(FieldsBase):
-    ''' invoice.schemaシートの列定義 '''
+    """invoice.schemaシートの列定義"""
+
     config = configparser.ConfigParser(allow_no_value=True)
-    config.read_string('''
+    config.read_string("""
 [header]
 width = 20
 title1 = ヘッダー
@@ -605,55 +633,60 @@ title1 = 正規表現
 title2 = (自由記述)
 title2_color = 
 
-''')
+""")
 
 
-def parse_json(folder:str) -> dict:
-    ''' 指定されたフォルダのJSONファイルを読み、辞書構造にしたものを返す機能 '''
+def parse_json(folder: str) -> dict:
+    """指定されたフォルダのJSONファイルを読み、辞書構造にしたものを返す機能"""
     templates = {}
 
     p = Path(folder)
-    for json_file in p.glob('*.json'):
+    for json_file in p.glob("*.json"):
         with open(json_file) as f:
             d = json.load(f)
         templates[json_file.name] = d
 
     return templates
 
-def template_sheet(wb:Workbook) -> None:
-    ''' 各種シートのもとになるシートを作成する機能 '''
+
+def template_sheet(wb: Workbook) -> None:
+    """各種シートのもとになるシートを作成する機能"""
     ws = wb.active
     ws.title = "template"
 
-    for row in range(1,1001):
+    for row in range(1, 1001):
         ws.row_dimensions[row].height = CommonSettings.default_height
 
-def rm_template_sheet(wb:Workbook) -> None:
-    ''' 各種シートのもとになったシートを削除する機能 '''
-    sheet_to_delete = wb['template']
+
+def rm_template_sheet(wb: Workbook) -> None:
+    """各種シートのもとになったシートを削除する機能"""
+    sheet_to_delete = wb["template"]
 
     wb.remove(sheet_to_delete)
 
-def explanation_sheet(wb:Workbook, templates:dict) -> None:
-    ''' 説明シートを作成する機能 '''
-    template_catalogschema = templates.get('catalog.schema.json', {})
-    catalog_id = template_catalogschema.get('$id', 'None') \
-                 .replace('https://rde.nims.go.jp/rde/dataset-templates/', '') \
-                 .replace('/catalog.schema.json', '')
-    title_ja = template_catalogschema.get('title/ja', 'None')
-    title_en = template_catalogschema.get('title/en', 'None')
 
-    template_invoiceschema = templates.get('invoice.schema.json', {})
-    description = template_invoiceschema.get('description', None)
+def explanation_sheet(wb: Workbook, templates: dict) -> None:
+    """説明シートを作成する機能"""
+    template_catalogschema = templates.get("catalog.schema.json", {})
+    catalog_id = (
+        template_catalogschema.get("$id", "None")
+        .replace("https://rde.nims.go.jp/rde/dataset-templates/", "")
+        .replace("/catalog.schema.json", "")
+    )
+    title_ja = template_catalogschema.get("title/ja", "None")
+    title_en = template_catalogschema.get("title/en", "None")
 
-    ws = wb.copy_worksheet(wb['template'])
+    template_invoiceschema = templates.get("invoice.schema.json", {})
+    description = template_invoiceschema.get("description", None)
+
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "説明"
 
     column_width = {
-        'A': 31.00,
-        'B': 33.25,
-        'C': 41.88,
-        'F': 63.0,
+        "A": 31.00,
+        "B": 33.25,
+        "C": 41.88,
+        "F": 63.0,
     }
 
     for col, width in column_width.items():
@@ -661,36 +694,44 @@ def explanation_sheet(wb:Workbook, templates:dict) -> None:
         ws.column_dimensions[col].width = width
 
     content = [
-        ["データセットテンプレート名",f"{title_ja}","各定義ファイルのdescriptionに利用されます"],
-        ["データセットテンプレート名(英)",f"{title_en}","各定義ファイルのdescriptionに利用されます"],
-        ["データセットテンプレートID",f"{catalog_id}","$idで利用されます"],
-        ["概要",f'{description}',""],
-        ["","",""],
-        ["作成日","",""],
-        ["作成者","",""],
-        ["最終更新日","",""],
-        ["最終更新者","",""],
+        [
+            "データセットテンプレート名",
+            f"{title_ja}",
+            "各定義ファイルのdescriptionに利用されます",
+        ],
+        [
+            "データセットテンプレート名(英)",
+            f"{title_en}",
+            "各定義ファイルのdescriptionに利用されます",
+        ],
+        ["データセットテンプレートID", f"{catalog_id}", "$idで利用されます"],
+        ["概要", f"{description}", ""],
+        ["", "", ""],
+        ["作成日", "", ""],
+        ["作成者", "", ""],
+        ["最終更新日", "", ""],
+        ["最終更新者", "", ""],
     ]
 
     start_row = 1
-    start_col = 1 # A=1
+    start_col = 1  # A=1
 
     for i, row in enumerate(content):
         # A列
         cell = ws.cell(row=start_row + i, column=start_col)
         cell.value = row[0]
         if row[0]:
-            cell.fill = CommonSettings.fill['lightgray']
+            cell.fill = CommonSettings.fill["lightgray"]
             cell.border = CommonSettings.border["default"]
         # B列
-        cell = ws.cell(row=start_row + i, column=start_col+1)
+        cell = ws.cell(row=start_row + i, column=start_col + 1)
         cell.value = row[1]
-        if i < 3: # 3行目まで(->0,1,2)色つけ
-            cell.fill = CommonSettings.fill['orange']
+        if i < 3:  # 3行目まで(->0,1,2)色つけ
+            cell.fill = CommonSettings.fill["orange"]
         if row[0]:
             cell.border = CommonSettings.border["default"]
         # C列
-        cell = ws.cell(row=start_row + i, column=start_col+2)
+        cell = ws.cell(row=start_row + i, column=start_col + 2)
         cell.value = row[2]
         if row[0]:
             cell.border = CommonSettings.border["default"]
@@ -699,30 +740,35 @@ def explanation_sheet(wb:Workbook, templates:dict) -> None:
     max_row = ws.max_row
 
     # シートのバージョン番号(=生成ツールのバージョン番号)
-    ws[f'A{max_row+2}'] = CommonSettings.version
-    ws[f'B{max_row+2}'] = 'シートレイアウトバージョン または template2excelツールのバージョン'
+    ws[f"A{max_row + 2}"] = CommonSettings.version
+    ws[f"B{max_row + 2}"] = (
+        "シートレイアウトバージョン または template2excelツールのバージョン"
+    )
 
     description = [
-        ["【説明】",""],
-        ["",""],
-        ["このExcelファイルは、excel2template.exeの入力ファイルです。",""],
-        ["次の4つのシートで構成されています。",""],
-        ["",""],
-        ["・説明",""],
-        ["・要件定義(metadata-def.json)",""],
-        ["・要件定義(catalog.schema.json)",""],
-        ["・要件定義(invoice.schema.json)",""],
-        ["",""],
-        ["セルの色には以下の意味があります。",""],
-        ["",""],
-        ["","  必須記入欄"],
-        ["","  オプション記入欄(場合によって記入)"],
-        ["","  自動記入欄(ユーザは入力不要)"],
-        ["","  記入不要欄(入力不要)"],
-        ["",""],
-        ["",""],
-        ["列の削除は禁止です。",""],
-        ["また、必須項目が入力されていない場合はエラーになるので必ず記入をお願いします。",""],
+        ["【説明】", ""],
+        ["", ""],
+        ["このExcelファイルは、excel2template.exeの入力ファイルです。", ""],
+        ["次の4つのシートで構成されています。", ""],
+        ["", ""],
+        ["・説明", ""],
+        ["・要件定義(metadata-def.json)", ""],
+        ["・要件定義(catalog.schema.json)", ""],
+        ["・要件定義(invoice.schema.json)", ""],
+        ["", ""],
+        ["セルの色には以下の意味があります。", ""],
+        ["", ""],
+        ["", "  必須記入欄"],
+        ["", "  オプション記入欄(場合によって記入)"],
+        ["", "  自動記入欄(ユーザは入力不要)"],
+        ["", "  記入不要欄(入力不要)"],
+        ["", ""],
+        ["", ""],
+        ["列の削除は禁止です。", ""],
+        [
+            "また、必須項目が入力されていない場合はエラーになるので必ず記入をお願いします。",
+            "",
+        ],
     ]
 
     # ここまでの最終行を取得
@@ -734,44 +780,44 @@ def explanation_sheet(wb:Workbook, templates:dict) -> None:
         cell = ws.cell(row=start_row + i, column=start_col)
         cell.value = row[0]
         match row[1]:
-            case '  必須記入欄':
-                cell.fill = CommonSettings.fill['orange']
-            case '  オプション記入欄(場合によって記入)':
+            case "  必須記入欄":
+                cell.fill = CommonSettings.fill["orange"]
+            case "  オプション記入欄(場合によって記入)":
                 ...
-            case '  自動記入欄(ユーザは入力不要)':
-                cell.fill = CommonSettings.fill['blue']
-            case '  記入不要欄(入力不要)':
-                cell.fill = CommonSettings.fill['gray']
+            case "  自動記入欄(ユーザは入力不要)":
+                cell.fill = CommonSettings.fill["blue"]
+            case "  記入不要欄(入力不要)":
+                cell.fill = CommonSettings.fill["gray"]
         # B列
-        cell = ws.cell(row=start_row + i, column=start_col+1)
+        cell = ws.cell(row=start_row + i, column=start_col + 1)
         cell.value = row[1]
 
-
-    frame = Side (style='thick', color='0000FF')
+    frame = Side(style="thick", color="0000FF")
 
     # ここまでの最終行を取得
     max_row = ws.max_row
 
-    for row  in ws[f"A{start_row}:B{max_row}"]:
+    for row in ws[f"A{start_row}:B{max_row}"]:
         for cell in row:
-            cell.border = Border(left=frame)   
-    for row  in ws[f"B{start_row}:B{max_row}"]:
+            cell.border = Border(left=frame)
+    for row in ws[f"B{start_row}:B{max_row}"]:
         for cell in row:
-            cell.border = Border(right=frame)   
-    ws[f"A{start_row}"].border = Border(left=frame,top=frame)
-    ws[f"B{start_row}"].border = Border(right=frame,top=frame)
-    ws[f"A{max_row}"].border = Border(left=frame,bottom=frame)
-    ws[f"B{max_row}"].border = Border(right=frame,bottom=frame)
+            cell.border = Border(right=frame)
+    ws[f"A{start_row}"].border = Border(left=frame, top=frame)
+    ws[f"B{start_row}"].border = Border(right=frame, top=frame)
+    ws[f"A{max_row}"].border = Border(left=frame, bottom=frame)
+    ws[f"B{max_row}"].border = Border(right=frame, bottom=frame)
 
-def matadata_def_sheet(wb:Workbook, template_matadatadef:dict) -> None:
-    ''' 要件定義(metadata-def.json)シートを作成する機能 '''
-    ws = wb.copy_worksheet(wb['template'])
+
+def matadata_def_sheet(wb: Workbook, template_matadatadef: dict) -> None:
+    """要件定義(metadata-def.json)シートを作成する機能"""
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "要件定義(metadata-def.json)"
 
     fields = FieldsMetadataDef()
-    #fields.list()
+    # fields.list()
     col_list = fields.get_field_list()
-    #pprint(col_list)
+    # pprint(col_list)
 
     start_row = 1
 
@@ -782,18 +828,22 @@ def matadata_def_sheet(wb:Workbook, template_matadatadef:dict) -> None:
         # 列幅の設定
         ws.column_dimensions[col_letter].width = field.width
         # 項目名
-        cell = ws[f'{col_letter}{start_row}']
-        cell.font = CommonSettings.font['bold_black']
+        cell = ws[f"{col_letter}{start_row}"]
+        cell.font = CommonSettings.font["bold_black"]
         cell.value = col_name
-        cell.alignment = Alignment(horizontal='center', vertical='center', wrapText=True)
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrapText=True
+        )
+        cell.fill = CommonSettings.fill["lightgray"]
         cell.border = CommonSettings.border["default"]
         # 項目名称(日本語)
-        cell = ws[f'{col_letter}{start_row + 1}']
-        cell.font = CommonSettings.font['bold_black']
+        cell = ws[f"{col_letter}{start_row + 1}"]
+        cell.font = CommonSettings.font["bold_black"]
         cell.value = field.draw_title()
-        cell.alignment = Alignment(horizontal='center', vertical='center', wrapText=True)
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrapText=True
+        )
+        cell.fill = CommonSettings.fill["lightgray"]
         cell.border = CommonSettings.border["default"]
 
     # 表題2行目は、2行分の高さが必要
@@ -802,9 +852,9 @@ def matadata_def_sheet(wb:Workbook, template_matadatadef:dict) -> None:
     ws.row_dimensions[row].height = current_height * 2
 
     start_row = 3
-    num_blank_row = 10 # 追加する余白行数
+    num_blank_row = 10  # 追加する余白行数
 
-    keys  = iter(template_matadatadef)
+    keys = iter(template_matadatadef)
     data_length = len(template_matadatadef.keys())
 
     end_row = start_row + len(template_matadatadef.keys()) + num_blank_row
@@ -814,270 +864,287 @@ def matadata_def_sheet(wb:Workbook, template_matadatadef:dict) -> None:
             row = template_matadatadef[key]
         except:
             # 余白行
-            key = ''
+            key = ""
             row = {}
 
         # category
-        name = 'category'
-        col_no =  fields.get_colno_by_name(name)
+        name = "category"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "metadata" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "metadata"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # parameter_name
-        col_no =  fields.get_colno_by_name('parameter_name')
+        col_no = fields.get_colno_by_name("parameter_name")
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = key
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['orange']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["orange"]
 
         # output
-        col_no =  fields.get_colno_by_name('output')
+        col_no = fields.get_colno_by_name("output")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'ON' if key else 'OFF'
-        cell.alignment = Alignment(horizontal='center', vertical='top')
-        cell.border = CommonSettings.border['default']
+        cell.value = "ON" if key else "OFF"
+        cell.alignment = Alignment(horizontal="center", vertical="top")
+        cell.border = CommonSettings.border["default"]
 
         # order
-        name = 'order'
-        col_no =  fields.get_colno_by_name(name)
+        name = "order"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        value = row.get(name, '')
-        cell.value = int(value) if value else ''
-        cell.alignment = Alignment(horizontal='center') # 数値だが中央揃え
-        cell.border = CommonSettings.border['default']
+        value = row.get(name, "")
+        cell.value = int(value) if value else ""
+        cell.alignment = Alignment(horizontal="center")  # 数値だが中央揃え
+        cell.border = CommonSettings.border["default"]
 
         # original_name
-        name = 'original_name'
-        alias = 'originalName'
-        col_no =  fields.get_colno_by_name(name)
+        name = "original_name"
+        alias = "originalName"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None) or row.get(alias, None) or ""
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # original_type
-        name = 'original_type'
-        col_no =  fields.get_colno_by_name(name)
+        name = "original_type"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, "")
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # name/ja & name/en
-        name = 'name'
-        for lang in ['ja', 'en']:
-            col_no =  fields.get_colno_by_name(f'{name}/{lang}')
+        name = "name"
+        for lang in ["ja", "en"]:
+            col_no = fields.get_colno_by_name(f"{name}/{lang}")
             cell = ws.cell(row=row_no, column=col_no)
-            cell.value = row.get(name, {}).get(lang, '')
-            cell.border = CommonSettings.border['default']
-            cell.fill = CommonSettings.fill['orange']
+            cell.value = row.get(name, {}).get(lang, "")
+            cell.border = CommonSettings.border["default"]
+            cell.fill = CommonSettings.fill["orange"]
 
         # taxonomy
-        name = 'taxonomy'
-        col_no =  fields.get_colno_by_name(name)
+        name = "taxonomy"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, "")
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # typeformat
-        name = 'typeformat'
-        col_no =  fields.get_colno_by_name(name)
+        name = "typeformat"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         if row:
-            s_type = row.get("schema", {}).get('type', "")
-            s_format = row.get("schema", {}).get('format', "")
+            s_type = row.get("schema", {}).get("type", "")
+            s_format = row.get("schema", {}).get("format", "")
             cell.value = _get_typeformat(s_type, s_format)
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['orange']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["orange"]
 
         # type
-        name = 'type'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "type"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",' \
-                + f'{col_letter_of_typeformat}{row_no}="integer","integer",' \
-                + f'{col_letter_of_typeformat}{row_no}="number","number",' \
-                + f'{col_letter_of_typeformat}{row_no}="array","array",' \
-                + f'{col_letter_of_typeformat}{row_no}="boolean","boolean",' \
-                + f'TRUE,"string")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",'
+            + f'{col_letter_of_typeformat}{row_no}="integer","integer",'
+            + f'{col_letter_of_typeformat}{row_no}="number","number",'
+            + f'{col_letter_of_typeformat}{row_no}="array","array",'
+            + f'{col_letter_of_typeformat}{row_no}="boolean","boolean",'
+            + f'TRUE,"string")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # format
-        name = 'format'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "format"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'{col_letter_of_typeformat}{row_no}="datetime","date-time",' \
-                + f'{col_letter_of_typeformat}{row_no}="duration","duration",' \
-                + f'TRUE,"")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'{col_letter_of_typeformat}{row_no}="datetime","date-time",'
+            + f'{col_letter_of_typeformat}{row_no}="duration","duration",'
+            + f'TRUE,"")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # unit
-        name = 'unit'
-        col_no =  fields.get_colno_by_name(name)
+        name = "unit"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, "")
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # description
-        name = 'description'
-        col_no =  fields.get_colno_by_name(name)
+        name = "description"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, "")
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # uri
-        name = 'uri'
-        col_no =  fields.get_colno_by_name(name)
+        name = "uri"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, "")
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # mode
-        name = 'mode'
-        col_no =  fields.get_colno_by_name(name)
+        name = "mode"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         value = row.get(name, "")
         cell.value = value
-        cell.border = CommonSettings.border['default']
-        cell.alignment = Alignment(vertical='top', wrapText=True)
-        if len(value) > 7: 
+        cell.border = CommonSettings.border["default"]
+        cell.alignment = Alignment(vertical="top", wrapText=True)
+        if len(value) > 7:
             # 高さを2行分に変更
             current_height = ws.row_dimensions[row_no].height
             ws.row_dimensions[row_no].height = current_height * 2
 
         # variable
-        name = 'variable'
-        col_no =  fields.get_colno_by_name(name)
+        name = "variable"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         value = row.get(name, "")
         cell.value = "TRUE" if value else ""
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # default
-        name = 'default'
-        col_no =  fields.get_colno_by_name(name)
+        name = "default"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, "")
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # sample
-        name = 'sample'
-        col_no =  fields.get_colno_by_name(name)
+        name = "sample"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "" # 取得すべき値なし
-        cell.border = CommonSettings.border['default']
+        cell.value = ""  # 取得すべき値なし
+        cell.border = CommonSettings.border["default"]
 
     # 先端カラム取得
     max_row = ws.max_row
     max_col = ws.max_column
 
     # 条件付き書式
-    name = 'output'
-    col_letter =  fields.get_colletter_by_name(name)
+    name = "output"
+    col_letter = fields.get_colletter_by_name(name)
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{max_row}',
+        f"{col_letter}{start_row}:{col_letter}{max_row}",
         FormulaRule(
             formula=[f'{col_letter}{start_row}="ON"'],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["green"],
             font=CommonSettings.font["white"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{max_row}',
+        f"{col_letter}{start_row}:{col_letter}{max_row}",
         FormulaRule(
             formula=[f'{col_letter}{start_row}="OFF"'],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["gray"],
             font=CommonSettings.font["white"],
-        )
+        ),
     )
 
-    name = 'output'
-    col_letter_output =  fields.get_colletter_by_name(name)
+    name = "output"
+    col_letter_output = fields.get_colletter_by_name(name)
 
-    # 入力必須項目 
-    names = ['parameter_name', 'name/ja', 'name/en', 'typeformat',]
+    # 入力必須項目
+    names = [
+        "parameter_name",
+        "name/ja",
+        "name/en",
+        "typeformat",
+    ]
     for name in names:
-        col_letter =  fields.get_colletter_by_name(name)
+        col_letter = fields.get_colletter_by_name(name)
         ws.conditional_formatting.add(
-            f'${col_letter}{start_row}:${col_letter}{max_row}',
+            f"${col_letter}{start_row}:${col_letter}{max_row}",
             FormulaRule(
-                formula=[f'AND(${col_letter_output}{start_row}="ON", ISBLANK(${col_letter}{start_row}))'],
+                formula=[
+                    f'AND(${col_letter_output}{start_row}="ON", ISBLANK(${col_letter}{start_row}))'
+                ],
                 stopIfTrue=True,
                 fill=CommonSettings.pattern_fill["red"],
-            )
+            ),
         )
 
     # 選択肢セット
-    name = 'output'
-    col_letter =  fields.get_colletter_by_name(name)
+    name = "output"
+    col_letter = fields.get_colletter_by_name(name)
     dv = DataValidation(
         type="list",
         formula1='"ON, OFF"',
         allow_blank=True,
         showErrorMessage=True,
         errorStyle="stop",
-
     )
-    dv.add(f'{col_letter}{start_row}:{col_letter}{max_row}')
+    dv.add(f"{col_letter}{start_row}:{col_letter}{max_row}")
     ws.add_data_validation(dv)
 
-    name = 'typeformat'
-    col_letter =  fields.get_colletter_by_name(name)
+    name = "typeformat"
+    col_letter = fields.get_colletter_by_name(name)
     dv = DataValidation(
         type="list",
         formula1='"string, datetime, duration, integer, number, array, boolean"',
         allow_blank=True,
         showErrorMessage=True,
         errorStyle="stop",
-
     )
-    dv.add(f'{col_letter}{start_row}:{col_letter}{max_row}')
+    dv.add(f"{col_letter}{start_row}:{col_letter}{max_row}")
     ws.add_data_validation(dv)
 
-def _get_typeformat(s_type:str, s_format:str=None) -> str:
-    ''' typeとformatの値からtypeformatの値を返す機能 (metadata-def.jsonシート用) '''
+
+def _get_typeformat(s_type: str, s_format: str = None) -> str:
+    """typeとformatの値からtypeformatの値を返す機能 (metadata-def.jsonシート用)"""
     match s_type:
-        case 'array':
+        case "array":
             return s_type
-        case 'boolean':
+        case "boolean":
             return s_type
-        case 'number':
+        case "number":
             return s_type
-        case 'integer':
+        case "integer":
             return s_type
-        case 'string':
-            if s_format == 'date-time':
-                return 'datetime' # '-'なし
-            elif s_format == 'duration':
+        case "string":
+            if s_format == "date-time":
+                return "datetime"  # '-'なし
+            elif s_format == "duration":
                 return s_format
-            elif not s_format: # formatが空の場合
+            elif not s_format:  # formatが空の場合
                 return s_type
             else:
-                if args.verbosity >=1:
-                    print(f'Could not get typeformat. please check type and/or format : {s_type}/{s_format}')
-                return 'unexpected'
+                if args.verbosity >= 1:
+                    print(
+                        f"Could not get typeformat. please check type and/or format : {s_type}/{s_format}"
+                    )
+                return "unexpected"
         case _:
-            if args.verbosity >=1:
-                print(f'Could not get typeformat. please check type and/or format : {s_type}/{s_format}')
-            return 'UNEXPECTED'
+            if args.verbosity >= 1:
+                print(
+                    f"Could not get typeformat. please check type and/or format : {s_type}/{s_format}"
+                )
+            return "UNEXPECTED"
 
-    if args.verbosity >=1:
-        print(f'Could not get typeformat. please check type and/or format : {s_type}/{s_format}')
-    return 'impossible' # ありえない            
+    if args.verbosity >= 1:
+        print(
+            f"Could not get typeformat. please check type and/or format : {s_type}/{s_format}"
+        )
+    return "impossible"  # ありえない
 
-def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
-    ''' 要件定義(catalog.schema.json)シートを作成する機能 '''
-    ws = wb.copy_worksheet(wb['template'])
+
+def catalog_schema_sheet(wb: Workbook, template_catalogschema: dict) -> None:
+    """要件定義(catalog.schema.json)シートを作成する機能"""
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "要件定義(catalog.schema.json)"
 
     fields = FieldsCatalogSchema()
@@ -1089,27 +1156,29 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
     ws["A3"].value = "description"
     ws["A4"].value = "title/ja"
     ws["A5"].value = "title/en"
-    
+
     ws["B1"].value = CommonSettings.json_schema_url
-    ws["B1"].fill = CommonSettings.fill['orange']
-    ws["B2"].value = '="https://rde.nims.go.jp/rde/dataset-templates/"&説明!B3&"/catalog.schema.json"'
-    ws["B2"].fill = CommonSettings.fill['blue']
+    ws["B1"].fill = CommonSettings.fill["orange"]
+    ws[
+        "B2"
+    ].value = '="https://rde.nims.go.jp/rde/dataset-templates/"&説明!B3&"/catalog.schema.json"'
+    ws["B2"].fill = CommonSettings.fill["blue"]
     ws["B2"].font = CommonSettings.font["white"]
     ws["B3"].value = '=説明!B4&":データカタログ定義"'
-    ws["B3"].fill = CommonSettings.fill['blue']
+    ws["B3"].fill = CommonSettings.fill["blue"]
     ws["B3"].font = CommonSettings.font["white"]
     ws["B4"].value = '=説明!B1&":データカタログ定義"'
-    ws["B4"].fill = CommonSettings.fill['blue']
+    ws["B4"].fill = CommonSettings.fill["blue"]
     ws["B4"].font = CommonSettings.font["white"]
     ws["B5"].value = '=説明!B2&":data catalog format"'
-    ws["B5"].fill = CommonSettings.fill['blue']
+    ws["B5"].fill = CommonSettings.fill["blue"]
     ws["B5"].font = CommonSettings.font["white"]
 
     # セルの連結
     start_row = 1
     end_row = ws.max_row
     for row in range(start_row, end_row + 1):
-        ws.cell(row=row, column=1).fill = CommonSettings.fill['lightgray']
+        ws.cell(row=row, column=1).fill = CommonSettings.fill["lightgray"]
         ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=5)
 
     max_col = ws.max_column
@@ -1130,18 +1199,22 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
         # 列幅の設定
         ws.column_dimensions[col_letter].width = field.width
         # 項目名
-        cell = ws[f'{col_letter}{start_row}']
-        cell.font = CommonSettings.font['bold_black']
+        cell = ws[f"{col_letter}{start_row}"]
+        cell.font = CommonSettings.font["bold_black"]
         cell.value = col_name
-        cell.alignment = Alignment(horizontal='center', vertical='center', wrapText=True)
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrapText=True
+        )
+        cell.fill = CommonSettings.fill["lightgray"]
         cell.border = CommonSettings.border["default"]
         # 項目名称(日本語)
-        cell = ws[f'{col_letter}{start_row + 1}']
-        cell.font = CommonSettings.font['bold_black']
+        cell = ws[f"{col_letter}{start_row + 1}"]
+        cell.font = CommonSettings.font["bold_black"]
         cell.value = field.draw_title()
-        cell.alignment = Alignment(horizontal='center', vertical='center', wrapText=True)
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrapText=True
+        )
+        cell.fill = CommonSettings.fill["lightgray"]
         cell.border = CommonSettings.border["default"]
 
     # 表題2行目は、2行分の高さが必要
@@ -1150,7 +1223,7 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
     ws.row_dimensions[row].height = current_height * 2
 
     start_row = ws.max_row + 1
-    num_blank_row = 10 # 追加する余白行数
+    num_blank_row = 10  # 追加する余白行数
 
     # 入力データ
     root_props = template_catalogschema.get("properties", {})
@@ -1160,7 +1233,7 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
 
     elements = catalog.get("properties", {})
 
-    keys  = iter(elements)
+    keys = iter(elements)
     data_length = len(elements.keys())
 
     end_row = start_row + len(elements.keys()) + num_blank_row
@@ -1170,60 +1243,60 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
             row = elements[key]
         except:
             # 余白行
-            key = ''
+            key = ""
             row = {}
 
         # header
-        name = 'header'
-        col_no =  fields.get_colno_by_name(name)
+        name = "header"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "data_catalog" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "data_catalog"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # parameter_name
-        name = 'parameter_name'
-        col_no =  fields.get_colno_by_name(name)
+        name = "parameter_name"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = key
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['orange']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["orange"]
 
         # output
-        name = 'output'
-        col_no =  fields.get_colno_by_name(name)
+        name = "output"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'ON' if key else 'OFF'
-        cell.alignment = Alignment(horizontal='center', vertical='top')
-        cell.border = CommonSettings.border['default']
+        cell.value = "ON" if key else "OFF"
+        cell.alignment = Alignment(horizontal="center", vertical="top")
+        cell.border = CommonSettings.border["default"]
 
         # label
-        name = 'label'
-        for lang in ['ja', 'en']:
-            col_no =  fields.get_colno_by_name(f'{name}/{lang}')
+        name = "label"
+        for lang in ["ja", "en"]:
+            col_no = fields.get_colno_by_name(f"{name}/{lang}")
             cell = ws.cell(row=row_no, column=col_no)
-            cell.value = row.get(name, {}).get(lang, '')
-            cell.border = CommonSettings.border['default']
-            cell.fill = CommonSettings.fill['orange']
+            cell.value = row.get(name, {}).get(lang, "")
+            cell.border = CommonSettings.border["default"]
+            cell.fill = CommonSettings.fill["orange"]
 
         # required
-        name = 'required'
-        col_no =  fields.get_colno_by_name(name)
+        name = "required"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'TRUE' if key in required else ''
-        cell.alignment = Alignment(horizontal='center', vertical='top')
-        cell.border = CommonSettings.border['default']
+        cell.value = "TRUE" if key in required else ""
+        cell.alignment = Alignment(horizontal="center", vertical="top")
+        cell.border = CommonSettings.border["default"]
 
         # typeformat
-        name = 'typeformat'
-        col_no =  fields.get_colno_by_name(name)
+        name = "typeformat"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         if row:
-            s_type = row.get('type',None)
-            s_format = row.get('format', None)
-            s_widget = row.get('options', {}).get('widget', None)
-            s_rows = row.get('options', {}).get('rows', None)
-            s_enum = row.get('enum', [])
+            s_type = row.get("type", None)
+            s_format = row.get("format", None)
+            s_widget = row.get("options", {}).get("widget", None)
+            s_rows = row.get("options", {}).get("rows", None)
+            s_enum = row.get("enum", [])
 
             typeformat = _get_typeformat4catalogNinvoice(
                 s_type,
@@ -1239,246 +1312,263 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
             s_widget = None
             s_rows = None
             s_enum = []
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['orange']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["orange"]
 
         # type
-        name = 'type'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "type"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",' \
-                + f'{col_letter_of_typeformat}{row_no}="integer","integer",' \
-                + f'{col_letter_of_typeformat}{row_no}="number","number",' \
-                + f'{col_letter_of_typeformat}{row_no}="boolean","boolean",' \
-                + f'TRUE,"string")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",'
+            + f'{col_letter_of_typeformat}{row_no}="integer","integer",'
+            + f'{col_letter_of_typeformat}{row_no}="number","number",'
+            + f'{col_letter_of_typeformat}{row_no}="boolean","boolean",'
+            + f'TRUE,"string")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # format
-        name = 'format'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "format"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",' \
-                + f'{col_letter_of_typeformat}{row_no}="date","date",' \
-                + f'{col_letter_of_typeformat}{row_no}="markdown","markdown",' \
-                + f'{col_letter_of_typeformat}{row_no}="time", "time",' \
-                + f'{col_letter_of_typeformat}{row_no}="uri","uri",' \
-                + f'{col_letter_of_typeformat}{row_no}="uuid","uuid",' \
-                + f'TRUE,"")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",'
+            + f'{col_letter_of_typeformat}{row_no}="date","date",'
+            + f'{col_letter_of_typeformat}{row_no}="markdown","markdown",'
+            + f'{col_letter_of_typeformat}{row_no}="time", "time",'
+            + f'{col_letter_of_typeformat}{row_no}="uri","uri",'
+            + f'{col_letter_of_typeformat}{row_no}="uuid","uuid",'
+            + f'TRUE,"")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # options/widget
-        name = 'options/widget'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "options/widget"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",' \
-                + f'{col_letter_of_typeformat}{row_no}="textarea","textarea",' \
-                + f'TRUE,"")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",'
+            + f'{col_letter_of_typeformat}{row_no}="textarea","textarea",'
+            + f'TRUE,"")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # options/rows
-        name = 'options/rows'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "options/rows"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = s_rows if typeformat == 'textarea' else ''
-        cell.border = CommonSettings.border['default']
+        cell.value = s_rows if typeformat == "textarea" else ""
+        cell.border = CommonSettings.border["default"]
 
         # enum
-        name = 'enum'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "enum"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = ','.join(s_enum) if typeformat == 'list' else ''
-        cell.border = CommonSettings.border['default']
+        cell.value = ",".join(s_enum) if typeformat == "list" else ""
+        cell.border = CommonSettings.border["default"]
         cell.alignment = Alignment(wrapText=True)
 
         # description
-        name = 'description'
-        col_no =  fields.get_colno_by_name(name)
+        name = "description"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # examples
-        name = 'examples'
-        col_no =  fields.get_colno_by_name(name)
+        name = "examples"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
         cell.alignment = Alignment(wrapText=True)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # default
-        name = 'default'
-        col_no =  fields.get_colno_by_name(name)
+        name = "default"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # const
-        name = 'const'
-        col_no =  fields.get_colno_by_name(name)
+        name = "const"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # description
-        name = 'description'
-        col_no =  fields.get_colno_by_name(name)
+        name = "description"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # options/unit
-        name1 = 'options'
-        name2 = 'unit'
-        col_no =  fields.get_colno_by_name(f'{name1}/{name2}')
+        name1 = "options"
+        name2 = "unit"
+        col_no = fields.get_colno_by_name(f"{name1}/{name2}")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = row.get(f'{name1}',{}).get(f'{name2}', None)
-        cell.border = CommonSettings.border['default']
+        cell.value = row.get(f"{name1}", {}).get(f"{name2}", None)
+        cell.border = CommonSettings.border["default"]
 
         # options/placeholder/{ja,en}
-        name1 = 'options'
-        name2 = 'placeholder'
-        for lang in ['ja', 'en']:
-            col_no =  fields.get_colno_by_name(f'{name1}/{name2}/{lang}')
+        name1 = "options"
+        name2 = "placeholder"
+        for lang in ["ja", "en"]:
+            col_no = fields.get_colno_by_name(f"{name1}/{name2}/{lang}")
             cell = ws.cell(row=row_no, column=col_no)
-            cell.value = row.get(name1, {}).get(name2, {}).get(lang, '')
-            cell.border = CommonSettings.border['default']
+            cell.value = row.get(name1, {}).get(name2, {}).get(lang, "")
+            cell.border = CommonSettings.border["default"]
 
     # 先端カラムの取得
     max_row = ws.max_row
-    #max_col = ws.max_column
+    # max_col = ws.max_column
 
     # 条件付き書式
     # 上部領域
     ws.conditional_formatting.add(
-        f'$B$1',
+        f"$B$1",
         FormulaRule(
-            formula=[f'ISBLANK($B$1)'],
+            formula=[f"ISBLANK($B$1)"],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["red"],
-        )
+        ),
     )
     # 一覧
-    name = 'output'
-    col_letter =  fields.get_colletter_by_name(name)
+    name = "output"
+    col_letter = fields.get_colletter_by_name(name)
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{max_row}',
+        f"{col_letter}{start_row}:{col_letter}{max_row}",
         FormulaRule(
             formula=[f'${col_letter}{start_row}="ON"'],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["green"],
             font=CommonSettings.font["white"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{max_row}',
+        f"{col_letter}{start_row}:{col_letter}{max_row}",
         FormulaRule(
             formula=[f'${col_letter}{start_row}="OFF"'],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["gray"],
             font=CommonSettings.font["white"],
-        )
+        ),
     )
 
     # 入力必須項目
-    name = 'output'
+    name = "output"
     col_letter_output = fields.get_colletter_by_name(name)
-    name = 'typeformat'
+    name = "typeformat"
     col_letter_typeformat = fields.get_colletter_by_name(name)
 
-    names = ['parameter_name', 'label/ja', 'label/en', 'typeformat',]
+    names = [
+        "parameter_name",
+        "label/ja",
+        "label/en",
+        "typeformat",
+    ]
     for name in names:
-        col_letter =  fields.get_colletter_by_name(name)
+        col_letter = fields.get_colletter_by_name(name)
         ws.conditional_formatting.add(
-            f'${col_letter}{start_row}:${col_letter}{max_row}',
+            f"${col_letter}{start_row}:${col_letter}{max_row}",
             FormulaRule(
-                formula=[f'AND(${col_letter_output}{start_row}="ON", ISBLANK(${col_letter}{start_row}))'],
+                formula=[
+                    f'AND(${col_letter_output}{start_row}="ON", ISBLANK(${col_letter}{start_row}))'
+                ],
                 stopIfTrue=True,
                 fill=CommonSettings.pattern_fill["red"],
-            )
+            ),
         )
     #
-    name = 'options/rows'
-    col_letter =  fields.get_colletter_by_name(name)
+    name = "options/rows"
+    col_letter = fields.get_colletter_by_name(name)
     ws.conditional_formatting.add(
-        f'${col_letter}{start_row}:${col_letter}{max_row}',
+        f"${col_letter}{start_row}:${col_letter}{max_row}",
         FormulaRule(
             formula=[
-                f'AND(${col_letter_output}{start_row}="ON",' \
-              + f'${col_letter_typeformat}{start_row}="textarea",' \
-              + f'ISBLANK(${col_letter}{start_row}))'
+                f'AND(${col_letter_output}{start_row}="ON",'
+                + f'${col_letter_typeformat}{start_row}="textarea",'
+                + f"ISBLANK(${col_letter}{start_row}))"
             ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["red"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'${col_letter}{start_row}:${col_letter}{max_row}',
+        f"${col_letter}{start_row}:${col_letter}{max_row}",
         FormulaRule(
             formula=[
-                f'AND(${col_letter_output}{start_row}="ON",' \
-              + f'${col_letter_typeformat}{start_row}="textarea",' \
-              + f'NOT(ISBLANK(${col_letter}{start_row})))'
+                f'AND(${col_letter_output}{start_row}="ON",'
+                + f'${col_letter_typeformat}{start_row}="textarea",'
+                + f"NOT(ISBLANK(${col_letter}{start_row})))"
             ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["orange"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'${col_letter}{start_row}:${col_letter}{max_row}',
-        FormulaRule(
-            formula=[f'AND({col_letter_output}{start_row}="ON", ${col_letter_typeformat}{start_row}<>"textarea")'],
-            stopIfTrue=True,
-            fill=CommonSettings.pattern_fill["gray"],
-        )
-    )
-    #
-    name = 'enum'
-    col_letter =  fields.get_colletter_by_name(name)
-    ws.conditional_formatting.add(
-        f'${col_letter}{start_row}:${col_letter}{max_row}',
+        f"${col_letter}{start_row}:${col_letter}{max_row}",
         FormulaRule(
             formula=[
-                f'AND(${col_letter_output}{start_row}="ON",' \
-              + f'${col_letter_typeformat}{start_row}="list",' \
-              + f'ISBLANK(${col_letter}{start_row}))'
+                f'AND({col_letter_output}{start_row}="ON", ${col_letter_typeformat}{start_row}<>"textarea")'
+            ],
+            stopIfTrue=True,
+            fill=CommonSettings.pattern_fill["gray"],
+        ),
+    )
+    #
+    name = "enum"
+    col_letter = fields.get_colletter_by_name(name)
+    ws.conditional_formatting.add(
+        f"${col_letter}{start_row}:${col_letter}{max_row}",
+        FormulaRule(
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON",'
+                + f'${col_letter_typeformat}{start_row}="list",'
+                + f"ISBLANK(${col_letter}{start_row}))"
             ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["red"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'${col_letter}{start_row}:${col_letter}{max_row}',
+        f"${col_letter}{start_row}:${col_letter}{max_row}",
         FormulaRule(
             formula=[
-                f'AND(${col_letter_output}{start_row}="ON",' \
-              + f'${col_letter_typeformat}{start_row}="list",' \
-              + f'NOT(ISBLANK(${col_letter}{start_row})))'
+                f'AND(${col_letter_output}{start_row}="ON",'
+                + f'${col_letter_typeformat}{start_row}="list",'
+                + f"NOT(ISBLANK(${col_letter}{start_row})))"
             ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["orange"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'${col_letter}{start_row}:${col_letter}{max_row}',
+        f"${col_letter}{start_row}:${col_letter}{max_row}",
         FormulaRule(
-            formula=[f'AND(${col_letter_output}{start_row}="ON", ${col_letter_typeformat}{start_row}<>"list")'],
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON", ${col_letter_typeformat}{start_row}<>"list")'
+            ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["gray"],
-        )
+        ),
     )
 
     # 選択肢セット
@@ -1488,9 +1578,8 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
         allow_blank=True,
         showErrorMessage=True,
         errorStyle="stop",
-
     )
-    dv.add(f'{col_letter_output}{start_row}:{col_letter_output}{max_row}')
+    dv.add(f"{col_letter_output}{start_row}:{col_letter_output}{max_row}")
     ws.add_data_validation(dv)
 
     dv = DataValidation(
@@ -1499,51 +1588,59 @@ def catalog_schema_sheet(wb:Workbook, template_catalogschema:dict) -> None:
         allow_blank=True,
         showErrorMessage=True,
         errorStyle="stop",
-
     )
-    dv.add(f'{col_letter_typeformat}{start_row}:{col_letter_typeformat}{max_row}')
+    dv.add(f"{col_letter_typeformat}{start_row}:{col_letter_typeformat}{max_row}")
     ws.add_data_validation(dv)
 
     dv = DataValidation(
         type="list",
-        formula1='" ,TRUE"', # TODO not show option of blank
+        formula1='" ,TRUE"',  # TODO not show option of blank
         allow_blank=True,
         showErrorMessage=True,
         errorStyle="stop",
-
     )
-    name = 'required'
-    col_letter =  fields.get_colletter_by_name(name)
-    dv.add(f'{col_letter}{start_row}:{col_letter}{max_row}')
+    name = "required"
+    col_letter = fields.get_colletter_by_name(name)
+    dv.add(f"{col_letter}{start_row}:{col_letter}{max_row}")
     ws.add_data_validation(dv)
 
-def _get_typeformat4catalogNinvoice(s_type:str, s_format:str=None, s_widget:str=None, s_enum:list=[]) -> str:
-    ''' type,format,widgetおよびenumの値からtypeformat値を返す機能 '''
+
+def _get_typeformat4catalogNinvoice(
+    s_type: str, s_format: str = None, s_widget: str = None, s_enum: list = []
+) -> str:
+    """type,format,widgetおよびenumの値からtypeformat値を返す機能"""
     match s_type:
-        case 'uri' | 'boolean' | 'integer' | 'number':
+        case "uri" | "boolean" | "integer" | "number":
             return s_type
-        case 'string':
+        case "string":
             match s_format:
-                case 'uuid' | 'date' | 'time' | 'markdown':
+                case "uuid" | "date" | "time" | "markdown":
                     return s_format
-            if s_enum: # 空のリストでは"ない"とき真
-                return 'list'
-            if s_widget == 'textarea':
+            if s_enum:  # 空のリストでは"ない"とき真
+                return "list"
+            if s_widget == "textarea":
                 return s_widget
             # その他は"string"
             return s_type
         case _:
-            if args.verbosity >=1:
-                print(f'Could not get typeformat. please check type,format,widget and enum : {s_type}/{s_format}/{s_widget}/{s_enum}')
-            return 'UNEXPECTED'
+            if args.verbosity >= 1:
+                print(
+                    f"Could not get typeformat. please check type,format,widget and enum : {s_type}/{s_format}/{s_widget}/{s_enum}"
+                )
+            return "UNEXPECTED"
 
-    if args.verbosity >=1:
-        print(f'Could not get typeformat. please check type,format,widget and enum : {s_type}/{s_format}/{s_widget}/{s_enum}')
-    return 'impossible' # ありえない            
+    if args.verbosity >= 1:
+        print(
+            f"Could not get typeformat. please check type,format,widget and enum : {s_type}/{s_format}/{s_widget}/{s_enum}"
+        )
+    return "impossible"  # ありえない
 
-def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.connect) -> None:
-    ''' 要件定義(invoice.schema.json)シートを作成する機能 '''
-    ws = wb.copy_worksheet(wb['template'])
+
+def invoice_schema_sheet(
+    wb: Workbook, template_invoiceschema: dict, conn: sqlite3.connect
+) -> None:
+    """要件定義(invoice.schema.json)シートを作成する機能"""
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "要件定義(invoice.schema.json)"
 
     fields = FieldsInvoiceSchema()
@@ -1555,19 +1652,21 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
     ws["A3"].value = "description"
 
     ws["B1"].value = CommonSettings.json_schema_url
-    ws["B1"].fill = CommonSettings.fill['orange']
-    ws["B2"].value = '="https://rde.nims.go.jp/rde/dataset-templates/"&説明!B3&"/invoice.schema.json"'
-    ws["B2"].fill = CommonSettings.fill['blue']
+    ws["B1"].fill = CommonSettings.fill["orange"]
+    ws[
+        "B2"
+    ].value = '="https://rde.nims.go.jp/rde/dataset-templates/"&説明!B3&"/invoice.schema.json"'
+    ws["B2"].fill = CommonSettings.fill["blue"]
     ws["B2"].font = CommonSettings.font["white"]
     ws["B3"].value = '=説明!B4&":送状定義"'
-    ws["B3"].fill = CommonSettings.fill['blue']
+    ws["B3"].fill = CommonSettings.fill["blue"]
     ws["B3"].font = CommonSettings.font["white"]
 
     # セルの連結
     start_row = 1
     end_row = ws.max_row
     for row in range(start_row, end_row + 1):
-        ws.cell(row=row, column=1).fill = CommonSettings.fill['lightgray']
+        ws.cell(row=row, column=1).fill = CommonSettings.fill["lightgray"]
         ws.merge_cells(start_row=row, start_column=2, end_row=row, end_column=5)
 
     max_col = ws.max_column
@@ -1588,18 +1687,22 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
         # 列幅の設定
         ws.column_dimensions[col_letter].width = field.width
         # 項目名
-        cell = ws[f'{col_letter}{start_row}']
-        cell.font = CommonSettings.font['bold_black']
+        cell = ws[f"{col_letter}{start_row}"]
+        cell.font = CommonSettings.font["bold_black"]
         cell.value = col_name
-        cell.alignment = Alignment(horizontal='center', vertical='center', wrapText=True)
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrapText=True
+        )
+        cell.fill = CommonSettings.fill["lightgray"]
         cell.border = CommonSettings.border["default"]
         # 項目名称(日本語)
-        cell = ws[f'{col_letter}{start_row + 1}']
-        cell.font = CommonSettings.font['bold_black']
+        cell = ws[f"{col_letter}{start_row + 1}"]
+        cell.font = CommonSettings.font["bold_black"]
         cell.value = field.draw_title()
-        cell.alignment = Alignment(horizontal='center', vertical='center', wrapText=True)
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.alignment = Alignment(
+            horizontal="center", vertical="center", wrapText=True
+        )
+        cell.fill = CommonSettings.fill["lightgray"]
         cell.border = CommonSettings.border["default"]
 
     # 表題2行目は、2行分の高さが必要
@@ -1608,7 +1711,7 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
     ws.row_dimensions[row].height = current_height * 2
 
     start_row = ws.max_row + 1
-    num_blank_row = 10 # 追加する余白行数
+    num_blank_row = 10  # 追加する余白行数
 
     # 入力データ
     root_props = template_invoiceschema.get("properties", {})
@@ -1618,19 +1721,19 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
     required_list = custom.get("required", [])
 
     sample = root_props.get("sample", {}).get("properties", {})
-    sample_common = [] # dummy
+    sample_common = []  # dummy
     general_items = sample.get("generalAttributes", {}).get("items", [])
     specific_items = sample.get("specificAttributes", {}).get("items", [])
 
     # headerの種類毎の行番号(開始行と終了行の配列)を格納する変数を用意
     row_layout = {}
 
-    #----------------#
+    # ----------------#
     # props_custom
-    #----------------#
-    data_name = 'props_custom'
+    # ----------------#
+    data_name = "props_custom"
     start_row = ws.max_row + 1
-    num_blank_row = 5 # 挿入する空白行
+    num_blank_row = 5  # 挿入する空白行
     end_row = start_row + len(eval(data_name).keys()) + num_blank_row - 1
     row_layout[data_name] = (start_row, end_row)
 
@@ -1641,111 +1744,116 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
             row = eval(data_name)[key]
         except:
             # 余白行
-            key = ''
+            key = ""
             row = {}
 
         # header
-        name = 'header'
-        col_no =  fields.get_colno_by_name(name)
+        name = "header"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "custom" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "custom"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # category_name
-        name = 'category_name'
-        col_no =  fields.get_colno_by_name(name)
+        name = "category_name"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "固有情報" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "固有情報"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # output
-        name = 'output'
-        col_no =  fields.get_colno_by_name(name)
+        name = "output"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'ON' if key else 'OFF'
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = CommonSettings.border['default']
+        cell.value = "ON" if key else "OFF"
+        cell.alignment = Alignment(horizontal="center")
+        cell.border = CommonSettings.border["default"]
 
         # parameter_name
-        name = 'parameter_name'
-        col_no =  fields.get_colno_by_name(name)
+        name = "parameter_name"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        #cell.value = key
-        col_letter_label_en = fields.get_colletter_by_name('label/en')
+        # cell.value = key
+        col_letter_label_en = fields.get_colletter_by_name("label/en")
         cell.value = f'=SUBSTITUTE(LOWER(${col_letter_label_en}{row_no})," ","_")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # label
-        name = 'label'
-        # enの場合の変換(1文字目大文字化、アンダースコアの空白置換、など)はしない 
-        for lang in ['ja', 'en']:
-            col_no =  fields.get_colno_by_name(f'{name}/{lang}')
+        name = "label"
+        # enの場合の変換(1文字目大文字化、アンダースコアの空白置換、など)はしない
+        for lang in ["ja", "en"]:
+            col_no = fields.get_colno_by_name(f"{name}/{lang}")
             cell = ws.cell(row=row_no, column=col_no)
             value = row.get(name, {}).get(lang, None)
             if not value:
-               # labelの値(とくにlabel/en)が空(または存在しない)の場合、keyで代替する
-               value = key
+                # labelの値(とくにlabel/en)が空(または存在しない)の場合、keyで代替する
+                value = key
+                # warning (keyが空値でなく、ラベルとして使われた場合はお知らせ)
+                if key:
+                    print(
+                        f'Warning: "{name}/{lang}" is not found in invoice.schema.json. Using "key"({key}) instead.'
+                    )
             cell.value = value
-            cell.border = CommonSettings.border['default']
-            cell.fill = CommonSettings.fill['orange']
+            cell.border = CommonSettings.border["default"]
+            cell.fill = CommonSettings.fill["orange"]
 
         # term
-        name = 'term'
-        col_no =  fields.get_colno_by_name(name)
+        name = "term"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = ''
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['gray']
+        cell.value = ""
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["gray"]
 
         # description
-        name = 'description'
-        col_no =  fields.get_colno_by_name(name)
+        name = "description"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # examples
-        name = 'examples'
-        col_no =  fields.get_colno_by_name(name)
+        name = "examples"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         value = row.get(name, None)
         if type(value) == list:
-            cell.value = ', '.join(map(str, value))
+            cell.value = ", ".join(map(str, value))
         else:
             cell.value = value
         cell.alignment = Alignment(wrapText=True)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # options/unit
-        name1 = 'options'
-        name2 = 'unit'
-        col_no =  fields.get_colno_by_name(f'{name1}/{name2}')
+        name1 = "options"
+        name2 = "unit"
+        col_no = fields.get_colno_by_name(f"{name1}/{name2}")
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name1, {}).get(name2, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # taxonomy
-        name = 'taxonomy'
-        col_no =  fields.get_colno_by_name(name)
+        name = "taxonomy"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = None # 値の取得はできない
-        cell.border = CommonSettings.border['default']
+        cell.value = None  # 値の取得はできない
+        cell.border = CommonSettings.border["default"]
 
         # required
-        name = 'required'
-        col_no =  fields.get_colno_by_name(name)
+        name = "required"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'TRUE' if key in required_list else ''
-        cell.alignment = Alignment(horizontal='center', vertical='top')
-        cell.border = CommonSettings.border['default']
+        cell.value = "TRUE" if key in required_list else ""
+        cell.alignment = Alignment(horizontal="center", vertical="top")
+        cell.border = CommonSettings.border["default"]
 
         dv = DataValidation(
             type="list",
-            formula1='" ,TRUE"', # TODO not show option of blank
+            formula1='" ,TRUE"',  # TODO not show option of blank
             allow_blank=True,
             showErrorMessage=True,
             errorStyle="stop",
@@ -1754,15 +1862,15 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
         ws.add_data_validation(dv)
 
         # typeformat
-        name = 'typeformat'
-        col_no =  fields.get_colno_by_name(name)
+        name = "typeformat"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         if row:
-            s_type = row.get('type',None)
-            s_format = row.get('format', None)
-            s_widget = row.get('options', {}).get('widget', None)
-            s_rows = row.get('options', {}).get('rows', None)
-            s_enum = row.get('enum', [])
+            s_type = row.get("type", None)
+            s_format = row.get("format", None)
+            s_widget = row.get("options", {}).get("widget", None)
+            s_rows = row.get("options", {}).get("rows", None)
+            s_enum = row.get("enum", [])
 
             typeformat = _get_typeformat4catalogNinvoice(
                 s_type,
@@ -1778,169 +1886,202 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
             s_widget = None
             s_rows = None
             s_enum = []
-        #cell.alignment = Alignment(horizontal='center', vertical='top')
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['orange']
+        # cell.alignment = Alignment(horizontal='center', vertical='top')
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["orange"]
 
         # type
-        name = 'type'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "type"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",' \
-                + f'{col_letter_of_typeformat}{row_no}="integer","integer",' \
-                + f'{col_letter_of_typeformat}{row_no}="number","number",' \
-                + f'{col_letter_of_typeformat}{row_no}="boolean","boolean",' \
-                + f'TRUE,"string")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",'
+            + f'{col_letter_of_typeformat}{row_no}="integer","integer",'
+            + f'{col_letter_of_typeformat}{row_no}="number","number",'
+            + f'{col_letter_of_typeformat}{row_no}="boolean","boolean",'
+            + f'TRUE,"string")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # format
-        name = 'format'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "format"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",' \
-                + f'{col_letter_of_typeformat}{row_no}="date","date",' \
-                + f'{col_letter_of_typeformat}{row_no}="markdown","markdown",' \
-                + f'{col_letter_of_typeformat}{row_no}="time", "time",' \
-                + f'{col_letter_of_typeformat}{row_no}="uri","uri",' \
-                + f'{col_letter_of_typeformat}{row_no}="uuid","uuid",' \
-                + f'TRUE,"")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",'
+            + f'{col_letter_of_typeformat}{row_no}="date","date",'
+            + f'{col_letter_of_typeformat}{row_no}="markdown","markdown",'
+            + f'{col_letter_of_typeformat}{row_no}="time", "time",'
+            + f'{col_letter_of_typeformat}{row_no}="uri","uri",'
+            + f'{col_letter_of_typeformat}{row_no}="uuid","uuid",'
+            + f'TRUE,"")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # options/widget
-        name = 'options/widget'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "options/widget"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = f'=_xlfn.IFS(' \
-                + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",' \
-                + f'{col_letter_of_typeformat}{row_no}="textarea","textarea",' \
-                + f'TRUE,"")'
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['blue']
+        cell.value = (
+            f"=_xlfn.IFS("
+            + f'ISBLANK({col_letter_of_typeformat}{row_no}), "",'
+            + f'{col_letter_of_typeformat}{row_no}="textarea","textarea",'
+            + f'TRUE,"")'
+        )
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["blue"]
         cell.font = CommonSettings.font["white"]
 
         # options/rows
-        name = 'options/rows'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "options/rows"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = s_rows if typeformat == 'textarea' else ''
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['gray']
+        cell.value = s_rows if typeformat == "textarea" else ""
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["gray"]
 
         # enum
-        name = 'enum'
-        col_no =  fields.get_colno_by_name(name)
-        col_letter_of_typeformat =  fields.get_colletter_by_name('typeformat')
+        name = "enum"
+        col_no = fields.get_colno_by_name(name)
+        col_letter_of_typeformat = fields.get_colletter_by_name("typeformat")
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = ','.join(s_enum) if typeformat == 'list' else ''
+        cell.value = ",".join(s_enum) if typeformat == "list" else ""
         cell.alignment = Alignment(wrapText=True)
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['gray']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["gray"]
 
         # default
-        name = 'default'
-        col_no =  fields.get_colno_by_name(name)
+        name = "default"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # const
-        name = 'const'
-        col_no =  fields.get_colno_by_name(name)
+        name = "const"
+        col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = row.get(name, None)
-        cell.border = CommonSettings.border['default']
+        cell.border = CommonSettings.border["default"]
 
         # options/placeholder/{ja,en}
-        name1 = 'options'
-        name2 = 'placeholder'
-        for lang in ['ja', 'en']:
-            col_no =  fields.get_colno_by_name(f'{name1}/{name2}/{lang}')
+        name1 = "options"
+        name2 = "placeholder"
+        for lang in ["ja", "en"]:
+            col_no = fields.get_colno_by_name(f"{name1}/{name2}/{lang}")
             cell = ws.cell(row=row_no, column=col_no)
-            cell.value = row.get(name1, {}).get(name2, {}).get(lang, '')
-            cell.border = CommonSettings.border['default']
+            cell.value = row.get(name1, {}).get(name2, {}).get(lang, "")
+            cell.border = CommonSettings.border["default"]
 
         # max,min
-        fs = ('maximum', 'exclusiveMaximum', 'minimum', 'exclusiveMinimum', 'maxLength', 'minLength', 'pattern')
+        fs = (
+            "maximum",
+            "exclusiveMaximum",
+            "minimum",
+            "exclusiveMinimum",
+            "maxLength",
+            "minLength",
+            "pattern",
+        )
         for name in fs:
-            col_no =  fields.get_colno_by_name(name)
+            col_no = fields.get_colno_by_name(name)
             cell = ws.cell(row=row_no, column=col_no)
             cell.value = row.get(name, None)
-            cell.border = CommonSettings.border['default']
+            cell.border = CommonSettings.border["default"]
 
-    #----------------#
+    # ----------------#
     # sample_common (空行だけでよい)
-    #----------------#
-    data_name = 'sample_common'
-    #pprint(ws.max_row)
+    # ----------------#
+    data_name = "sample_common"
+    # pprint(ws.max_row)
     start_row = ws.max_row + 1
-    #pprint(start_row)
-    num_blank_row = 5 # 挿入する空白行
+    # pprint(start_row)
+    num_blank_row = 5  # 挿入する空白行
     end_row = start_row + len(eval(data_name)) + num_blank_row - 1
     row_layout[data_name] = (start_row, end_row)
 
     for row_no in range(start_row, end_row + 1):
         # header
-        name = 'header'
+        name = "header"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "sample_common" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "sample_common"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # category_name
-        name = 'category_name'
+        name = "category_name"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "試料情報(共通項目)" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "試料情報(共通項目)"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # output
-        name = 'output'
+        name = "output"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'OFF'
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = CommonSettings.border['default']
+        cell.value = "OFF"
+        cell.alignment = Alignment(horizontal="center")
+        cell.border = CommonSettings.border["default"]
 
         # 残りのセルは、罫線のみ
-        name = 'parameter_name'
+        name = "parameter_name"
         start_col_no = fields.get_colno_by_name(name)
         end_col_no = ws.max_column
         for col_no in range(start_col_no, end_col_no + 1):
             cell = ws.cell(row=row_no, column=col_no)
-            cell.border = CommonSettings.border['default']
+            cell.border = CommonSettings.border["default"]
 
         # 背景色
-        fs = ('parameter_name', 'label/ja', 'label/en')
+        fs = ("parameter_name", "label/ja", "label/en")
         for name in fs:
-            col_no =  fields.get_colno_by_name(name)
+            col_no = fields.get_colno_by_name(name)
             cell = ws.cell(row=row_no, column=col_no)
-            cell.fill = CommonSettings.fill['orange']
-        fs = ('term', 'options/unit', 'required', 'typeformat', 'type', 'format', 'options/widget',
-              'options/rows', 'enum', 'default', 'const', 'options/placeholder/ja', 'options/placeholder/en',
-              'maximum', 'exclusiveMaximum', 'minimum', 'exclusiveMinimum', 'maxLength', 'minLength', 'pattern')
+            cell.fill = CommonSettings.fill["orange"]
+        fs = (
+            "term",
+            "options/unit",
+            "required",
+            "typeformat",
+            "type",
+            "format",
+            "options/widget",
+            "options/rows",
+            "enum",
+            "default",
+            "const",
+            "options/placeholder/ja",
+            "options/placeholder/en",
+            "maximum",
+            "exclusiveMaximum",
+            "minimum",
+            "exclusiveMinimum",
+            "maxLength",
+            "minLength",
+            "pattern",
+        )
         for name in fs:
-            col_no =  fields.get_colno_by_name(name)
+            col_no = fields.get_colno_by_name(name)
             cell = ws.cell(row=row_no, column=col_no)
-            cell.fill = CommonSettings.fill['gray']
+            cell.fill = CommonSettings.fill["gray"]
 
-    #----------------#
+    # ----------------#
     # general_items
-    #----------------#
-    data_name = 'general_items'
+    # ----------------#
+    data_name = "general_items"
     start_row = ws.max_row + 1
-    num_blank_row = 5 # 挿入する空白行
+    num_blank_row = 5  # 挿入する空白行
     end_row = start_row + len(eval(data_name)) + num_blank_row - 1
     row_layout[data_name] = (start_row, end_row)
 
@@ -1952,48 +2093,48 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
             # 余白行
             row = {}
 
-        term_id = row.get('properties', {}).get('termId', {}).get('const', '')
+        term_id = row.get("properties", {}).get("termId", {}).get("const", "")
         if term_id:
             term = _get_term_w_termid(conn, term_id)
         else:
             term = None
 
         # header
-        name = 'header'
+        name = "header"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "sample_general" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "sample_general"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # category_name
-        name = 'category_name'
+        name = "category_name"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "試料情報(一般項目)" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "試料情報(一般項目)"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # output
-        name = 'output'
+        name = "output"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'ON' if term else 'OFF'
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = CommonSettings.border['default']
+        cell.value = "ON" if term else "OFF"
+        cell.alignment = Alignment(horizontal="center")
+        cell.border = CommonSettings.border["default"]
 
         # term
-        name = 'term'
+        name = "term"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = term
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['orange']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["orange"]
 
-        ref_sheet = 'sample.general_sample_term'
+        ref_sheet = "sample.general_sample_term"
         dv = DataValidation(
             type="list",
-            formula1=f'={ref_sheet}!$C$2:$C$25',
+            formula1=f"={ref_sheet}!$C$2:$C$25",
             allow_blank=True,
             showErrorMessage=True,
             errorStyle="stop",
@@ -2002,56 +2143,74 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
         ws.add_data_validation(dv)
 
         # etc
-        col_letter_of_term =  fields.get_colletter_by_name('term')
-        ref_sheet = 'sample.general_sample_term'
+        col_letter_of_term = fields.get_colletter_by_name("term")
+        ref_sheet = "sample.general_sample_term"
 
         fs = [
-            ('parameter_name', 2),
-            ('label/ja', 3),
-            ('label/en', 4),
-            ('options/placeholder/ja', 5),
-            ('options/placeholder/en', 6),
+            ("parameter_name", 2),
+            ("label/ja", 3),
+            ("label/en", 4),
+            ("options/placeholder/ja", 5),
+            ("options/placeholder/en", 6),
         ]
 
         for col_info in fs:
             name = col_info[0]
             return_col_no = col_info[1]
 
-            col_no =  fields.get_colno_by_name(name)
+            col_no = fields.get_colno_by_name(name)
             cell = ws.cell(row=row_no, column=col_no)
-            cell.value = f'=IFERROR(' \
-                       + f'INDEX(' \
-                       + f'{ref_sheet}!$A:$H,' \
-                       + f'MATCH(${col_letter_of_term}{row_no},{ref_sheet}!$C:$C,FALSE),' \
-                       + f'{return_col_no})' \
-                       + f',"")'
-            #cell.border = CommonSettings.border['default']
-            cell.fill = CommonSettings.fill['blue']
+            cell.value = (
+                f"=IFERROR("
+                + f"INDEX("
+                + f"{ref_sheet}!$A:$H,"
+                + f"MATCH(${col_letter_of_term}{row_no},{ref_sheet}!$C:$C,FALSE),"
+                + f"{return_col_no})"
+                + f',"")'
+            )
+            # cell.border = CommonSettings.border['default']
+            cell.fill = CommonSettings.fill["blue"]
             cell.font = CommonSettings.font["white"]
 
         # parameter_name以降のセルに、罫線設定
-        name = 'parameter_name'
+        name = "parameter_name"
         start_col_no = fields.get_colno_by_name(name)
         end_col_no = ws.max_column
         for col_no in range(start_col_no, end_col_no + 1):
             cell = ws.cell(row=row_no, column=col_no)
-            cell.border = CommonSettings.border['default']
+            cell.border = CommonSettings.border["default"]
 
         # 背景色
-        fs = ('options/unit', 'required', 'typeformat', 'type', 'format', 'options/widget',
-              'options/rows', 'enum', 'default', 'const',
-              'maximum', 'exclusiveMaximum', 'minimum', 'exclusiveMinimum', 'maxLength', 'minLength', 'pattern')
+        fs = (
+            "options/unit",
+            "required",
+            "typeformat",
+            "type",
+            "format",
+            "options/widget",
+            "options/rows",
+            "enum",
+            "default",
+            "const",
+            "maximum",
+            "exclusiveMaximum",
+            "minimum",
+            "exclusiveMinimum",
+            "maxLength",
+            "minLength",
+            "pattern",
+        )
         for name in fs:
-            col_no =  fields.get_colno_by_name(name)
+            col_no = fields.get_colno_by_name(name)
             cell = ws.cell(row=row_no, column=col_no)
-            cell.fill = CommonSettings.fill['gray']
+            cell.fill = CommonSettings.fill["gray"]
 
-    #----------------#
+    # ----------------#
     # specific_items
-    #----------------#
-    data_name = 'specific_items'
+    # ----------------#
+    data_name = "specific_items"
     start_row = ws.max_row + 1
-    num_blank_row = 5 # 挿入する空白行
+    num_blank_row = 5  # 挿入する空白行
     end_row = start_row + len(eval(data_name)) + num_blank_row - 1
     row_layout[data_name] = (start_row, end_row)
 
@@ -2063,8 +2222,8 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
             # 余白行
             row = {}
 
-        term_id = row.get('properties', {}).get('termId', {}).get('const', '')
-        class_id = row.get('properties', {}).get('classId', {}).get('const', '')
+        term_id = row.get("properties", {}).get("termId", {}).get("const", "")
+        class_id = row.get("properties", {}).get("classId", {}).get("const", "")
 
         if term_id:
             term = _get_term_w_termid_and_classid(conn, term_id, class_id)
@@ -2072,41 +2231,41 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
             term = None
 
         # header
-        name = 'header'
+        name = "header"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "sample_specific" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "sample_specific"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # category_name
-        name = 'category_name'
+        name = "category_name"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = "試料情報(分類別項目)" # 固定値
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['lightgray']
+        cell.value = "試料情報(分類別項目)"  # 固定値
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["lightgray"]
 
         # output
-        name = 'output'
+        name = "output"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
-        cell.value = 'ON' if term else 'OFF'
-        cell.alignment = Alignment(horizontal='center')
-        cell.border = CommonSettings.border['default']
+        cell.value = "ON" if term else "OFF"
+        cell.alignment = Alignment(horizontal="center")
+        cell.border = CommonSettings.border["default"]
 
         # term
-        name = 'term'
+        name = "term"
         col_no = fields.get_colno_by_name(name)
         cell = ws.cell(row=row_no, column=col_no)
         cell.value = term
-        cell.border = CommonSettings.border['default']
-        cell.fill = CommonSettings.fill['orange']
+        cell.border = CommonSettings.border["default"]
+        cell.fill = CommonSettings.fill["orange"]
 
-        ref_sheet = 'sample.specific_sample_term'
+        ref_sheet = "sample.specific_sample_term"
         dv = DataValidation(
             type="list",
-            formula1=f'={ref_sheet}!$L$2:$L$36',
+            formula1=f"={ref_sheet}!$L$2:$L$36",
             allow_blank=True,
             showErrorMessage=True,
             errorStyle="stop",
@@ -2115,220 +2274,254 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
         ws.add_data_validation(dv)
 
         # etc
-        col_letter_of_term =  fields.get_colletter_by_name('term')
-        ref_sheet = 'sample.specific_sample_term'
+        col_letter_of_term = fields.get_colletter_by_name("term")
+        ref_sheet = "sample.specific_sample_term"
 
         fs = [
-            ('parameter_name', 3),
-            ('label/ja', 12),
-            ('label/en', 13),
-            ('options/placeholder/ja', 8),
-            ('options/placeholder/en', 9),
+            ("parameter_name", 3),
+            ("label/ja", 12),
+            ("label/en", 13),
+            ("options/placeholder/ja", 8),
+            ("options/placeholder/en", 9),
         ]
 
         for col_info in fs:
             name = col_info[0]
             return_col_no = col_info[1]
 
-            col_no =  fields.get_colno_by_name(name)
+            col_no = fields.get_colno_by_name(name)
             cell = ws.cell(row=row_no, column=col_no)
-            cell.value = f'=IFERROR(' \
-                       + f'INDEX(' \
-                       + f'{ref_sheet}!$A:$M,' \
-                       + f'MATCH(${col_letter_of_term}{row_no},{ref_sheet}!$L:$L,FALSE),' \
-                       + f'{return_col_no})' \
-                       + f',"")'
-            cell.fill = CommonSettings.fill['blue']
+            cell.value = (
+                f"=IFERROR("
+                + f"INDEX("
+                + f"{ref_sheet}!$A:$M,"
+                + f"MATCH(${col_letter_of_term}{row_no},{ref_sheet}!$L:$L,FALSE),"
+                + f"{return_col_no})"
+                + f',"")'
+            )
+            cell.fill = CommonSettings.fill["blue"]
             cell.font = CommonSettings.font["white"]
 
         # parameter_name以降のセルに、罫線設定
-        name = 'parameter_name'
+        name = "parameter_name"
         start_col_no = fields.get_colno_by_name(name)
         end_col_no = ws.max_column
         for col_no in range(start_col_no, end_col_no + 1):
             cell = ws.cell(row=row_no, column=col_no)
-            cell.border = CommonSettings.border['default']
+            cell.border = CommonSettings.border["default"]
 
         # 背景色
-        fs = ('options/unit', 'required', 'typeformat', 'type', 'format', 'options/widget',
-              'options/rows', 'enum', 'default', 'const',
-              'maximum', 'exclusiveMaximum', 'minimum', 'exclusiveMinimum', 'maxLength', 'minLength', 'pattern')
+        fs = (
+            "options/unit",
+            "required",
+            "typeformat",
+            "type",
+            "format",
+            "options/widget",
+            "options/rows",
+            "enum",
+            "default",
+            "const",
+            "maximum",
+            "exclusiveMaximum",
+            "minimum",
+            "exclusiveMinimum",
+            "maxLength",
+            "minLength",
+            "pattern",
+        )
         for name in fs:
-            col_no =  fields.get_colno_by_name(name)
+            col_no = fields.get_colno_by_name(name)
             cell = ws.cell(row=row_no, column=col_no)
-            cell.fill = CommonSettings.fill['gray']
+            cell.fill = CommonSettings.fill["gray"]
 
     # 条件付き書式
-    #max_col = ws.max_column
+    # max_col = ws.max_column
     max_row = ws.max_row
 
     # 上部領域
     ws.conditional_formatting.add(
-        f'$B$1',
+        f"$B$1",
         FormulaRule(
-            formula=[f'ISBLANK($B$1)'],
+            formula=[f"ISBLANK($B$1)"],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["red"],
-        )
+        ),
     )
 
     # 一覧
 
     # 全項目対象
-    start_row = row_layout['props_custom'][0]
-    end_row = row_layout['specific_items'][1]
+    start_row = row_layout["props_custom"][0]
+    end_row = row_layout["specific_items"][1]
 
     #
-    name = 'output'
-    col_letter =  fields.get_colletter_by_name(name)
+    name = "output"
+    col_letter = fields.get_colletter_by_name(name)
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{max_row}',
+        f"{col_letter}{start_row}:{col_letter}{max_row}",
         FormulaRule(
             formula=[f'${col_letter}{start_row}="ON"'],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["green"],
             font=CommonSettings.font["white"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{max_row}',
+        f"{col_letter}{start_row}:{col_letter}{max_row}",
         FormulaRule(
             formula=[f'${col_letter}{start_row}="OFF"'],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["gray"],
             font=CommonSettings.font["white"],
-        )
+        ),
     )
     # 項目種別
     # custom & sample_common
-    start_row =row_layout['props_custom'][0]
-    end_row =row_layout['sample_common'][1]
+    start_row = row_layout["props_custom"][0]
+    end_row = row_layout["sample_common"][1]
 
     # outputがONなら、入力必須
-    name = 'output'
-    col_letter_output =  fields.get_colletter_by_name(name)
-    fs = ('label/ja', 'label/en')
+    name = "output"
+    col_letter_output = fields.get_colletter_by_name(name)
+    fs = ("label/ja", "label/en")
     for name in fs:
-        col_letter =  fields.get_colletter_by_name(name)
+        col_letter = fields.get_colletter_by_name(name)
         ws.conditional_formatting.add(
-            f'{col_letter}{start_row}:{col_letter}{end_row}',
+            f"{col_letter}{start_row}:{col_letter}{end_row}",
             FormulaRule(
-                formula=[f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'],
+                formula=[
+                    f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'
+                ],
                 stopIfTrue=True,
                 fill=CommonSettings.pattern_fill["red"],
-            )
+            ),
         )
     # sample_common
-    start_row =row_layout['sample_common'][0]
-    end_row =row_layout['sample_common'][1]
+    start_row = row_layout["sample_common"][0]
+    end_row = row_layout["sample_common"][1]
 
     # outputがONなら、入力必須
-    fs = ('parameter_name',) # 1項目しかないタプルは、最後のカンマ(,)が必須
+    fs = ("parameter_name",)  # 1項目しかないタプルは、最後のカンマ(,)が必須
     for name in fs:
-        col_letter =  fields.get_colletter_by_name(name)
+        col_letter = fields.get_colletter_by_name(name)
         ws.conditional_formatting.add(
-            f'{col_letter}{start_row}:{col_letter}{end_row}',
+            f"{col_letter}{start_row}:{col_letter}{end_row}",
             FormulaRule(
-                formula=[f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'],
+                formula=[
+                    f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'
+                ],
                 stopIfTrue=True,
                 fill=CommonSettings.pattern_fill["red"],
-            )
+            ),
         )
 
     # custom
-    start_row =row_layout['props_custom'][0]
-    end_row =row_layout['props_custom'][1]
+    start_row = row_layout["props_custom"][0]
+    end_row = row_layout["props_custom"][1]
 
-    name = 'output'
-    col_letter_output =  fields.get_colletter_by_name(name)
+    name = "output"
+    col_letter_output = fields.get_colletter_by_name(name)
 
-    name = 'parameter_name'
-    col_letter =  fields.get_colletter_by_name(name)
+    name = "parameter_name"
+    col_letter = fields.get_colletter_by_name(name)
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
-        FormulaRule(
-            formula=[f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'],
-            stopIfTrue=True,
-            fill=CommonSettings.pattern_fill["red"],
-        )
-    )
-    name = 'typeformat'
-    col_letter =  fields.get_colletter_by_name(name)
-    ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
-        FormulaRule(
-            formula=[f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'],
-            stopIfTrue=True,
-            fill=CommonSettings.pattern_fill["red"],
-        )
-    )
-
-    name = 'typeformat'
-    col_letter_typeformat =  fields.get_colletter_by_name(name)
-
-    name = 'options/rows'
-    col_letter =  fields.get_colletter_by_name(name)
-    ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
         FormulaRule(
             formula=[
-                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="textarea",' \
-              + f'ISBLANK({col_letter}{start_row}))'
+                f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'
             ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["red"],
-        )
+        ),
     )
+    name = "typeformat"
+    col_letter = fields.get_colletter_by_name(name)
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
-        FormulaRule(
-            formula=[f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="textarea")'],
-            stopIfTrue=True,
-            fill=CommonSettings.pattern_fill["orange"],
-        )
-    )
-    ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
-        FormulaRule(
-            formula=[f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}<>"textarea")'],
-            stopIfTrue=True,
-            fill=CommonSettings.pattern_fill["gray"],
-        )
-    )
-
-    name = 'enum'
-    col_letter =  fields.get_colletter_by_name(name)
-    ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
         FormulaRule(
             formula=[
-                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="list",' \
-              + f'ISBLANK({col_letter}{start_row}))'
+                f'AND(${col_letter_output}{start_row}="ON",ISBLANK({col_letter}{start_row}))'
             ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["red"],
-        )
+        ),
+    )
+
+    name = "typeformat"
+    col_letter_typeformat = fields.get_colletter_by_name(name)
+
+    name = "options/rows"
+    col_letter = fields.get_colletter_by_name(name)
+    ws.conditional_formatting.add(
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
+        FormulaRule(
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="textarea",'
+                + f"ISBLANK({col_letter}{start_row}))"
+            ],
+            stopIfTrue=True,
+            fill=CommonSettings.pattern_fill["red"],
+        ),
     )
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
         FormulaRule(
-            formula=[f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="list")'],
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="textarea")'
+            ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["orange"],
-        )
+        ),
     )
     ws.conditional_formatting.add(
-        f'{col_letter}{start_row}:{col_letter}{end_row}',
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
         FormulaRule(
-            formula=[f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}<>"list")'],
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}<>"textarea")'
+            ],
             stopIfTrue=True,
             fill=CommonSettings.pattern_fill["gray"],
-        )
+        ),
+    )
+
+    name = "enum"
+    col_letter = fields.get_colletter_by_name(name)
+    ws.conditional_formatting.add(
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
+        FormulaRule(
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="list",'
+                + f"ISBLANK({col_letter}{start_row}))"
+            ],
+            stopIfTrue=True,
+            fill=CommonSettings.pattern_fill["red"],
+        ),
+    )
+    ws.conditional_formatting.add(
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
+        FormulaRule(
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}="list")'
+            ],
+            stopIfTrue=True,
+            fill=CommonSettings.pattern_fill["orange"],
+        ),
+    )
+    ws.conditional_formatting.add(
+        f"{col_letter}{start_row}:{col_letter}{end_row}",
+        FormulaRule(
+            formula=[
+                f'AND(${col_letter_output}{start_row}="ON",${col_letter_typeformat}{start_row}<>"list")'
+            ],
+            stopIfTrue=True,
+            fill=CommonSettings.pattern_fill["gray"],
+        ),
     )
 
     # 選択肢セット (種類共通)
-    start_row = row_layout['props_custom'][0]
-    end_row = row_layout['specific_items'][1]
+    start_row = row_layout["props_custom"][0]
+    end_row = row_layout["specific_items"][1]
 
     dv = DataValidation(
         type="list",
@@ -2337,32 +2530,38 @@ def invoice_schema_sheet(wb:Workbook, template_invoiceschema:dict, conn:sqlite3.
         showErrorMessage=True,
         errorStyle="stop",
     )
-    dv.add(f'{col_letter_output}{start_row}:{col_letter_output}{end_row}')
+    dv.add(f"{col_letter_output}{start_row}:{col_letter_output}{end_row}")
     ws.add_data_validation(dv)
 
     ## header と category_name  -> セルの結合にする
-    sheets = ('props_custom', 'sample_common', 'general_items', 'specific_items')
+    sheets = ("props_custom", "sample_common", "general_items", "specific_items")
     for sheet in sheets:
         start_row = row_layout[sheet][0]
         end_row = row_layout[sheet][1]
 
-        fs = ('header', 'category_name')
+        fs = ("header", "category_name")
         for name in fs:
-            col_no =  fields.get_colno_by_name(name)
-            ws.merge_cells(start_row=start_row, start_column=col_no, end_row=end_row, end_column=col_no)
+            col_no = fields.get_colno_by_name(name)
+            ws.merge_cells(
+                start_row=start_row,
+                start_column=col_no,
+                end_row=end_row,
+                end_column=col_no,
+            )
             cell = ws.cell(row=start_row, column=col_no)
-            cell.alignment = Alignment(vertical='top')
+            cell.alignment = Alignment(vertical="top")
 
-def _get_term_w_termid(conn:sqlite3.Connection, term_id:str) -> str:
-    ''' term_idから 日本語名称を返す機能 '''
 
-    conn.row_factory = sqlite3.Row # 戻りをlistからdict(っぽいもの)に変更
+def _get_term_w_termid(conn: sqlite3.Connection, term_id: str) -> str:
+    """term_idから 日本語名称を返す機能"""
+
+    conn.row_factory = sqlite3.Row  # 戻りをlistからdict(っぽいもの)に変更
     cur1 = conn.cursor()
 
-    tablename0 = 'sample_general_sample_term'
-    tablename1 = 'dict_term'
+    tablename0 = "sample_general_sample_term"
+    tablename1 = "dict_term"
 
-    query = f'''
+    query = f"""
 SELECT
      term_id
     -- ,key_name
@@ -2376,24 +2575,27 @@ SELECT
       `{tablename0}`.term_id = `{tablename1}`.id
  WHERE
     term_id = ?
-;'''
+;"""
 
-    cur1.execute(query,[term_id])
+    cur1.execute(query, [term_id])
     row = cur1.fetchone()
 
-    return row['name_ja']
+    return row["name_ja"]
 
-def _get_term_w_termid_and_classid(conn:sqlite3.Connection, term_id:str, class_id:str) -> str:
-    ''' term_id と class_idから その名称を返す機能 '''
 
-    conn.row_factory = sqlite3.Row # 戻りをlistからdict(っぽいもの)に変更
+def _get_term_w_termid_and_classid(
+    conn: sqlite3.Connection, term_id: str, class_id: str
+) -> str:
+    """term_id と class_idから その名称を返す機能"""
+
+    conn.row_factory = sqlite3.Row  # 戻りをlistからdict(っぽいもの)に変更
     cur1 = conn.cursor()
 
-    tablename0 = 'sample_specific_sample_term'
-    tablename1 = 'dict_term'
-    tablename2 = 'sample_sample_class'
+    tablename0 = "sample_specific_sample_term"
+    tablename1 = "dict_term"
+    tablename2 = "sample_sample_class"
 
-    query = f'''
+    query = f"""
 SELECT
      sample_class_id
     ,term_id
@@ -2414,26 +2616,27 @@ SELECT
     term_id = ?
     AND
     sample_class_id = ?
-;'''
+;"""
 
-    cur1.execute(query,[term_id, class_id])
+    cur1.execute(query, [term_id, class_id])
     row = cur1.fetchone()
 
     return f'{row["class_name"]}/{row["term_name"]}'
 
-def dict_term_sheet(wb:Workbook) -> None:
-    ''' dict.termシートを作成する機能 (本シートは最終的に非表示になる) '''
-    ws = wb.copy_worksheet(wb['template'])
+
+def dict_term_sheet(wb: Workbook) -> None:
+    """dict.termシートを作成する機能 (本シートは最終的に非表示になる)"""
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "dict.term"
 
     column_width = {
-        'A': 45,
-        'B': 50,
-        'C': 55,
-        'D': 30,
-        'E': 25,
-        'F': 40,
-        'G': 30,
+        "A": 45,
+        "B": 50,
+        "C": 55,
+        "D": 30,
+        "E": 25,
+        "F": 40,
+        "G": 30,
     }
 
     for col, width in column_width.items():
@@ -2441,7 +2644,7 @@ def dict_term_sheet(wb:Workbook) -> None:
         ws.column_dimensions[col].width = width
 
     csv_string = csv_dict_term()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
     for row in reader:
         ws.append(row)
@@ -2454,22 +2657,23 @@ def dict_term_sheet(wb:Workbook) -> None:
             cell.border = CommonSettings.border["default"]
 
     # シートを非表示に変更
-    ws.sheet_state = 'hidden'
+    ws.sheet_state = "hidden"
 
-def sample_general_sample_term_sheet(wb:Workbook) -> None:
-    ''' sample.general_sample_termシートを作成する機能 (本シートは最終的に非表示になる) '''
-    ws = wb.copy_worksheet(wb['template'])
+
+def sample_general_sample_term_sheet(wb: Workbook) -> None:
+    """sample.general_sample_termシートを作成する機能 (本シートは最終的に非表示になる)"""
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "sample.general_sample_term"
 
     column_width = {
-        'A': 40,
-        'B': 50,
-        'C': 25,
-        'D': 40,
-        'E': 45,
-        'F': 45,
-        'G': 50,
-        'H': 40,
+        "A": 40,
+        "B": 50,
+        "C": 25,
+        "D": 40,
+        "E": 45,
+        "F": 45,
+        "G": 50,
+        "H": 40,
     }
 
     for col, width in column_width.items():
@@ -2477,7 +2681,7 @@ def sample_general_sample_term_sheet(wb:Workbook) -> None:
         ws.column_dimensions[col].width = width
 
     csv_string = csv_sample_general_sample_term()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
     for row in reader:
         ws.append(row)
@@ -2490,10 +2694,10 @@ def sample_general_sample_term_sheet(wb:Workbook) -> None:
     #   H列 : max_col (rangeの右端は含まないので、+1処理が必要)
     for col in range(3, max_col + 1):
         for row in range(2, max_row + 1):
-           cell =  ws.cell(row=row, column=col)
-           refcol = col - 1
-           cell.value = f'=VLOOKUP(A{str(row)},dict.term!A:G,{refcol},FALSE)&""'
-           cell.fill = CommonSettings.fill['blue']
+            cell = ws.cell(row=row, column=col)
+            refcol = col - 1
+            cell.value = f'=VLOOKUP(A{str(row)},dict.term!A:G,{refcol},FALSE)&""'
+            cell.fill = CommonSettings.fill["blue"]
 
     for row in range(1, max_row + 1):
         for col in range(1, max_col + 1):
@@ -2501,17 +2705,18 @@ def sample_general_sample_term_sheet(wb:Workbook) -> None:
             cell.border = CommonSettings.border["default"]
 
     # シートを非表示に変更
-    ws.sheet_state = 'hidden'
+    ws.sheet_state = "hidden"
 
-def sample_sample_class_sheet(wb:Workbook) -> None:
-    ''' sample.sample_classシートを作成する機能 (本シートは最終的に非表示になる) '''
-    ws = wb.copy_worksheet(wb['template'])
+
+def sample_sample_class_sheet(wb: Workbook) -> None:
+    """sample.sample_classシートを作成する機能 (本シートは最終的に非表示になる)"""
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "sample.sample_class"
 
     column_width = {
-        'A': 40,
-        'B': 15,
-        'C': 20,
+        "A": 40,
+        "B": 15,
+        "C": 20,
     }
 
     for col, width in column_width.items():
@@ -2519,7 +2724,7 @@ def sample_sample_class_sheet(wb:Workbook) -> None:
         ws.column_dimensions[col].width = width
 
     csv_string = csv_sample_sample_class()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
     for row in reader:
         ws.append(row)
@@ -2533,27 +2738,28 @@ def sample_sample_class_sheet(wb:Workbook) -> None:
             cell.border = CommonSettings.border["default"]
 
     # シートを非表示に変更
-    ws.sheet_state = 'hidden'
+    ws.sheet_state = "hidden"
 
-def sample_specific_sample_term_sheet(wb:Workbook) -> None:
-    ''' sample.specific_sample_termシートを作成する機能 (本シートは最終的に非表示になる) '''
-    ws = wb.copy_worksheet(wb['template'])
+
+def sample_specific_sample_term_sheet(wb: Workbook) -> None:
+    """sample.specific_sample_termシートを作成する機能 (本シートは最終的に非表示になる)"""
+    ws = wb.copy_worksheet(wb["template"])
     ws.title = "sample.specific_sample_term"
 
     column_width = {
-        'A': 40,
-        'B': 40,
-        'C': 50,
-        'D': 35,
-        'E': 35,
-        'F': 25,
-        'G': 30,
-        'H': 45,
-        'I': 45,
-        'J': 50,
-        'K': 40,
-        'L': 40,
-        'M': 40,
+        "A": 40,
+        "B": 40,
+        "C": 50,
+        "D": 35,
+        "E": 35,
+        "F": 25,
+        "G": 30,
+        "H": 45,
+        "I": 45,
+        "J": 50,
+        "K": 40,
+        "L": 40,
+        "M": 40,
     }
 
     for col, width in column_width.items():
@@ -2561,7 +2767,7 @@ def sample_specific_sample_term_sheet(wb:Workbook) -> None:
         ws.column_dimensions[col].width = width
 
     csv_string = csv_sample_specific_sample_term()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
     for row in reader:
         ws.append(row)
@@ -2574,34 +2780,36 @@ def sample_specific_sample_term_sheet(wb:Workbook) -> None:
     #   E列 : 5 (rangeの右端は含まないので、+1処理が必要)
     for col in range(4, 6):
         for row in range(2, max_row + 1):
-           cell =  ws.cell(row=row, column=col)
-           refcol = col - 2
-           cell.value = f'=VLOOKUP(A{str(row)},sample.sample_class!A:C,{refcol},FALSE)&""'
-           cell.fill = CommonSettings.fill['blue']
+            cell = ws.cell(row=row, column=col)
+            refcol = col - 2
+            cell.value = (
+                f'=VLOOKUP(A{str(row)},sample.sample_class!A:C,{refcol},FALSE)&""'
+            )
+            cell.fill = CommonSettings.fill["blue"]
 
     # F列 ～ K列を値から参照式に書き換え (1行目はヘッダ行なので対象外)
     #   F列 : 6
     #   K列 : 11 (rangeの右端は含まないので、+1処理が必要)
     for col in range(6, 12):
         for row in range(2, max_row + 1):
-           cell =  ws.cell(row=row, column=col)
-           refcol = col - 4
-           cell.value = f'=VLOOKUP(B{str(row)},dict.term!A:G,{refcol},FALSE)&""'
-           cell.fill = CommonSettings.fill['blue']
+            cell = ws.cell(row=row, column=col)
+            refcol = col - 4
+            cell.value = f'=VLOOKUP(B{str(row)},dict.term!A:G,{refcol},FALSE)&""'
+            cell.fill = CommonSettings.fill["blue"]
 
     # L列 ～ M列を値から参照式に書き換え (1行目はヘッダ行なので対象外)
     #   L列 : 12
     #   M列 : 13
     col = 12
     for row in range(2, max_row + 1):
-        cell =  ws.cell(row=row, column=col)
+        cell = ws.cell(row=row, column=col)
         cell.value = f'=D{str(row)}&"/"&F{str(row)}'
-        cell.fill = CommonSettings.fill['blue']
+        cell.fill = CommonSettings.fill["blue"]
     col = 13
     for row in range(2, max_row + 1):
-        cell =  ws.cell(row=row, column=col)
+        cell = ws.cell(row=row, column=col)
         cell.value = f'=E{str(row)}&"/"&G{str(row)}'
-        cell.fill = CommonSettings.fill['blue']
+        cell.fill = CommonSettings.fill["blue"]
 
     for row in range(1, max_row + 1):
         for col in range(1, max_col + 1):
@@ -2609,12 +2817,12 @@ def sample_specific_sample_term_sheet(wb:Workbook) -> None:
             cell.border = CommonSettings.border["default"]
 
     # シートを非表示に変更
-    ws.sheet_state = 'hidden'
+    ws.sheet_state = "hidden"
 
 
 def csv_dict_term() -> str:
-    '''csv_dict_term のCSVデータを返す機能 '''
-    return '''
+    """csv_dict_term のCSVデータを返す機能"""
+    return """
 id,name_ja,name_en,hint_ja,hint_en,term_uri,created
 2f815032-c60b-2c42-46dd-cdb4624ede4b,計測装置,Characterization Instrument,,,https://matvoc.nims.go.jp/entity/Q1885,2022-07-11 04:36:42.734137+00
 2f7cdff7-bc05-6fb3-3d5e-30827a252aaa,磁気共鳴,Magnetic Resonance,,,https://matvoc.nims.go.jp/entity/Q1888,2022-07-11 04:36:42.734137+00
@@ -2991,16 +3199,17 @@ b4ce4016-e2bf-e5a1-7cae-ed496c7a776f,タンパク名,Protein name,タンパク�
 047e30f3-f294-e58d-cbe4-6bb588bf4cf8,NCBIアクセッション番号,NCBI accession number,NCBIアクセッション番号を入力してください,Please enter NCBI accession number,NULL,2022-08-09 02:57:35.896387+00
 3adf9874-7bcb-e5f8-99cb-3d6fd9d7b55e,一般名称,General name,一般名称を入力してください,Please enter General name,NULL,2022-08-24 01:04:54.879136+00
 9270879d-d94e-4d3f-2d5c-19568e040004,InChI,InChI,InChIを入力してください,Please enter InChI,NULL,2022-08-01 09:32:47.462801+00
-    '''.strip()
+    """.strip()
+
 
 def csv_sample_general_sample_term() -> str:
-    ''' csv_sample_general_sample_termのCSVデータを返す機能
+    """csv_sample_general_sample_termのCSVデータを返す機能
 
     TODO
      - 本来は、term_id,key_nameだけでよく、それ以降は別のテーブルを参照しているもの。ここも2列のデータでよい。
-    '''
+    """
 
-    return '''
+    return """
 term_id,key_name,dict.term.name_ja,dict.term.name_en,dict.term.hint_ja,dict.term.hint_en,dict.term.term_uri,dict.term.created
 33c6e9dc-5787-0f96-7683-f39281c60419,sample.general.composiiton,化学式、組成式、分子式など,"Chemical formula, composition formula, molecular formula, etc.",化学式、組成式、分子式などを入力してください,"Please enter Chemical formula, composition formula, molecular formula, etc.",NULL,2022-07-11 04:36:42.734137+00
 f2d5e89e-01f0-66a2-5d8e-623a4fc31698,sample.general.material-name,物質名,Material name,物質名を入力してください,Please enter Material name,NULL,2022-07-11 04:36:42.734137+00
@@ -3026,11 +3235,12 @@ b4ce4016-e2bf-e5a1-7cae-ed496c7a776f,sample.general.protein-name,タンパク名
 0aadfff2-37de-411f-883a-38b62b2abbce,sample.general.chemical-composition,化学組成,Chemical composition,,,NULL,2022-10-11 06:12:34.454294+00
 5e166ac4-bfcd-457a-84bc-8626abe9188f,sample.general.supplier,購入元,Supplier,,,NULL,2022-10-11 06:12:52.876335+00
 0d0417a3-3c3b-496a-b0fb-5a26f8a74166,sample.general.lot-number-or-product-number-etc,ロット番号、製造番号など,Lot number or product number etc,,,NULL,2022-10-11 06:13:06.860778+00
-    '''.strip()
+    """.strip()
+
 
 def csv_sample_sample_class() -> str:
-    ''' csv_sample_sample_classのデータを返す機能 '''
-    return '''
+    """csv_sample_sample_classのデータを返す機能"""
+    return """
 id,name_ja,name_en
 01cb3c01-37a4-5a43-d8ca-f523ca99a75b,有機材料,organic material
 932e4fe1-9724-305f-ffc5-1908c31c83e5,無機材料,inorganic material
@@ -3039,16 +3249,17 @@ a674a8ef-efa8-9497-4ed4-74de55fafddb,金属・合金,metals and alloys
 52148afb-6759-23e8-c8b8-33912ec5bfcf,半導体,semiconductors
 961c9637-9b83-0e9d-e60e-ffc1e2517afd,セラミックス,ceramics
 0dde5969-3039-739b-b33b-97df40450790,生物学的物質,biological
-    '''.strip()
+    """.strip()
+
 
 def csv_sample_specific_sample_term() -> str:
-    ''' csv_sample_specific_sample_termのCSVデータを返す機能
+    """csv_sample_specific_sample_termのCSVデータを返す機能
 
     TODO
      - 本来は、sample_class_id,term_id,key_nameだけでよく、それ以降は別のテーブルを参照しているもの。ここも3列のデータでよい。
-    '''
+    """
 
-    return '''
+    return """
 sample_class_id,term_id,key_name,sample.sample_class.name_ja,sample.sample_class.name_en,dict.term.name_ja,dict.term.name_en,dict.term.hint_ja,dict.term.hint_en,dict.term.term_uri,dict.term.created,bind_class_and_term_ja,bind_class_and_term_en
 01cb3c01-37a4-5a43-d8ca-f523ca99a75b,3250c45d-0ed6-1438-43b5-eb679918604a,sample.specific.organic.chemical-formula,有機材料,organic material,化学式,Chemical formula,化学式を入力してください,Please enter Chemical formula,NULL,2022-07-11 04:36:42.734137+00,有機材料/化学式,organic material/Chemical formula
 01cb3c01-37a4-5a43-d8ca-f523ca99a75b,70c2c751-5404-19b7-4a5e-981e6cebbb15,sample.specific.organic.name,有機材料,organic material,名称,Name,名称を入力してください,Please enter Name,NULL,2022-07-11 04:36:42.734137+00,有機材料/名称,organic material/Name
@@ -3085,30 +3296,31 @@ a674a8ef-efa8-9497-4ed4-74de55fafddb,4efc4c3b-727c-c752-cf28-701b55dba1af,sample
 0dde5969-3039-739b-b33b-97df40450790,047e30f3-f294-e58d-cbe4-6bb588bf4cf8,sample.specific.biological.ncbi-accession-number,生物学的物質,biological,NCBIアクセッション番号,NCBI accession number,NCBIアクセッション番号を入力してください,Please enter NCBI accession number,NULL,2022-08-09 02:57:35.896387+00,生物学的物質/NCBIアクセッション番号,biological/NCBI accession number
 01cb3c01-37a4-5a43-d8ca-f523ca99a75b,9270879d-d94e-4d3f-2d5c-19568e040004,sample.specific.organic-material.inchi,有機材料,organic material,InChI,InChI,InChIを入力してください,Please enter InChI,NULL,2022-08-01 09:32:47.462801+00,有機材料/InChI,organic material/InChI
 01cb3c01-37a4-5a43-d8ca-f523ca99a75b,3edadcff-8a85-51d9-708f-8f76bf055377,sample.specific.organic-material.inchi-key,有機材料,organic material,InChI key,InChI key,InChI keyを入力してください,Please enter InChI key,NULL,2022-08-01 09:32:47.462801+00,有機材料/InChI key,organic material/InChI key
-    '''.strip()
+    """.strip()
+
 
 def preparedb() -> sqlite3.connect:
-    ''' 中間DBとして使用しているSQLiteの使用準備をする機能 '''
-    conn1 = sqlite3.connect(':memory:') # オンメモリ
-    #db_name = './aaa.db'               # ファイルに出力する場合はこの2行の方に切り替える
-    #conn1 = sqlite3.connect(db_name)
+    """中間DBとして使用しているSQLiteの使用準備をする機能"""
+    conn1 = sqlite3.connect(":memory:")  # オンメモリ
+    # db_name = './aaa.db'               # ファイルに出力する場合はこの2行の方に切り替える
+    # conn1 = sqlite3.connect(db_name)
     cur1 = conn1.cursor()
 
     csv_data = [
-        'csv_dict_term',
-        'csv_sample_general_sample_term',
-        'csv_sample_sample_class',
-        'csv_sample_specific_sample_term',
+        "csv_dict_term",
+        "csv_sample_general_sample_term",
+        "csv_sample_sample_class",
+        "csv_sample_specific_sample_term",
     ]
 
     # 既にテーブルがある場合は削除
     for d in csv_data:
-        tablename = d.replace('csv_', '')
-        query = f'DROP TABLE IF EXISTS {tablename};'
+        tablename = d.replace("csv_", "")
+        query = f"DROP TABLE IF EXISTS {tablename};"
         cur1.execute(query)
 
     # テーブル作成
-    tablename = 'dict_term'
+    tablename = "dict_term"
     query = f"""
 CREATE TABLE {tablename} (
      `id`                 TEXT
@@ -3123,7 +3335,7 @@ CREATE TABLE {tablename} (
     """
     cur1.execute(query)
 
-    tablename = 'sample_general_sample_term'
+    tablename = "sample_general_sample_term"
     query = f"""
 CREATE TABLE {tablename} (
      `term_id`            TEXT
@@ -3133,7 +3345,7 @@ CREATE TABLE {tablename} (
     """
     cur1.execute(query)
 
-    tablename = 'sample_sample_class'
+    tablename = "sample_sample_class"
     query = f"""
 CREATE TABLE {tablename} (
      `id`                TEXT
@@ -3144,7 +3356,7 @@ CREATE TABLE {tablename} (
     """
     cur1.execute(query)
 
-    tablename = 'sample_specific_sample_term'
+    tablename = "sample_specific_sample_term"
     query = f"""
 CREATE TABLE {tablename} (
      `sample_class_id`    TEXT
@@ -3160,95 +3372,94 @@ CREATE TABLE {tablename} (
 
     # 実データ投入
 
-    tablename = 'dict_term'
-    query = f'INSERT INTO {tablename} ' \
-            '(`id`, `name_ja`, `name_en`, `hint_ja`, `hint_en`, `term_uri`, `created`) ' \
-            'VALUES(?,?,?,?,?,?,?);'
+    tablename = "dict_term"
+    query = (
+        f"INSERT INTO {tablename} "
+        "(`id`, `name_ja`, `name_en`, `hint_ja`, `hint_en`, `term_uri`, `created`) "
+        "VALUES(?,?,?,?,?,?,?);"
+    )
     csv_string = csv_dict_term()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
-    next(reader) # 1行目はヘッダ行
+    next(reader)  # 1行目はヘッダ行
     for row in reader:
-        cur1.execute(query,row)
+        cur1.execute(query, row)
 
-    tablename = 'sample_general_sample_term'
-    query = f'INSERT INTO {tablename} ' \
-            '(`term_id`,`key_name`) ' \
-            'VALUES(?,?);'
+    tablename = "sample_general_sample_term"
+    query = f"INSERT INTO {tablename} " "(`term_id`,`key_name`) " "VALUES(?,?);"
     csv_string = csv_sample_general_sample_term()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
-    next(reader) # 1行目はヘッダ行
+    next(reader)  # 1行目はヘッダ行
     for row in reader:
-        cur1.execute(query,row[:2])
+        cur1.execute(query, row[:2])
 
-    tablename = 'sample_sample_class'
-    query = f'INSERT INTO {tablename} ' \
-            '(`id`,`name_ja`,`name_en`) ' \
-            'VALUES(?,?,?);'
+    tablename = "sample_sample_class"
+    query = f"INSERT INTO {tablename} " "(`id`,`name_ja`,`name_en`) " "VALUES(?,?,?);"
     csv_string = csv_sample_sample_class()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
-    next(reader) # 1行目はヘッダ行
+    next(reader)  # 1行目はヘッダ行
     for row in reader:
-        cur1.execute(query,row[:3])
+        cur1.execute(query, row[:3])
 
-    tablename = 'sample_specific_sample_term'
-    query = f'INSERT INTO {tablename} ' \
-            '(`sample_class_id`,`term_id`,`key_name`) ' \
-            'VALUES(?,?,?);'
+    tablename = "sample_specific_sample_term"
+    query = (
+        f"INSERT INTO {tablename} "
+        "(`sample_class_id`,`term_id`,`key_name`) "
+        "VALUES(?,?,?);"
+    )
     csv_string = csv_sample_specific_sample_term()
-    csvfile= io.StringIO(csv_string)
+    csvfile = io.StringIO(csv_string)
     reader = csv.reader(csvfile, skipinitialspace=True)
-    next(reader) # 1行目はヘッダ行
+    next(reader)  # 1行目はヘッダ行
     for row in reader:
-        cur1.execute(query,row[:3])
+        cur1.execute(query, row[:3])
 
     # 確定
     conn1.commit()
 
     return conn1
 
-def writable_dir(dir:str) -> str:
-    ''' 指定されたフォルダが書き込み可能かどうかのチェックする機能 '''
+
+def writable_dir(dir: str) -> str:
+    """指定されたフォルダが書き込み可能かどうかのチェックする機能"""
     if os.access(dir, os.W_OK) and os.path.isdir(dir):
         return os.path.abspath(dir)
     else:
         raise argparse.ArgumentTypeError(dir + " is not writable or does not exist.")
 
+
 def prepare() -> argparse.Namespace:
-    ''' 引数の処理をする機能 '''
+    """引数の処理をする機能"""
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--dir',
+        "--dir",
         type=str,
-        default='./template',
-        #required=True,
-        help='Specify foldername where template files are stored[default=./template]'
+        default="./template",
+        # required=True,
+        help="Specify foldername where template files are stored[default=./template]",
     )
     parser.add_argument(
-        '--out',
-        #type=str,
+        "--out",
+        # type=str,
         type=writable_dir,
-        default='./',
-        #required=True,
-        help='Specify foldername where Excel file will be output [default=./]'
+        default="./",
+        # required=True,
+        help="Specify foldername where Excel file will be output [default=./]",
     )
     parser.add_argument(
-        '-v', '--verbosity',
-        action='count',
-        default=0,
-        help='Increase output verbosity'
+        "-v", "--verbosity", action="count", default=0, help="Increase output verbosity"
     )
     args = parser.parse_args()
 
     # Templateファイル群の存在チェック
     p_dir = Path(args.dir)
     if not p_dir.exists():
-       print(f'"{args.dir}" is not found.', file=sys.stderr)
-       sys.exit(1)
+        print(f'"{args.dir}" is not found.', file=sys.stderr)
+        sys.exit(1)
     # JSON files
-    for json in ['metadata-def.json', 'catalog.schema.json', 'invoice.schema.json']: 
+    for json in ["metadata-def.json", "catalog.schema.json", "invoice.schema.json"]:
         p_file = p_dir.joinpath(json)
         if not p_file.exists():
             print(f'"{p_file}" is not found in "{args.dir}".', file=sys.stderr)
@@ -3257,8 +3468,9 @@ def prepare() -> argparse.Namespace:
     # OK
     return args
 
-def main(args:argparse.Namespace) -> None:
-    ''' 各種Excelシートを作成する機能 '''
+
+def main(args: argparse.Namespace) -> None:
+    """各種Excelシートを作成する機能"""
     wb = Workbook()
 
     # テンプレートとなるシート作成
@@ -3269,16 +3481,16 @@ def main(args:argparse.Namespace) -> None:
     # テンプレートファイル読み込み
     template_dir = args.dir
     if args.verbosity >= 2:
-        print(f'template files dir: {template_dir}')
-    #templates = parse_json('./template')
+        print(f"template files dir: {template_dir}")
+    # templates = parse_json('./template')
     templates = parse_json(template_dir)
 
     # シートの生成
-    #explanation_sheet(wb, templates.get('catalog.schema.json', {}))
+    # explanation_sheet(wb, templates.get('catalog.schema.json', {}))
     explanation_sheet(wb, templates)
-    matadata_def_sheet(wb, templates.get('metadata-def.json', {}))
-    catalog_schema_sheet(wb, templates.get('catalog.schema.json', {}))
-    invoice_schema_sheet(wb, templates.get('invoice.schema.json', {}), conn)
+    matadata_def_sheet(wb, templates.get("metadata-def.json", {}))
+    catalog_schema_sheet(wb, templates.get("catalog.schema.json", {}))
+    invoice_schema_sheet(wb, templates.get("invoice.schema.json", {}), conn)
     dict_term_sheet(wb)
     sample_general_sample_term_sheet(wb)
     sample_sample_class_sheet(wb)
@@ -3292,22 +3504,25 @@ def main(args:argparse.Namespace) -> None:
         ws.sheet_view.tabSelected = False
 
     # 開いたときに表示されるシートを設定
-    #wb.active = wb.sheetnames.index('要件定義(catalog.schema.json)')
-    #wb.active = wb.sheetnames.index('要件定義(invoice.schema.json)')
+    # wb.active = wb.sheetnames.index('要件定義(catalog.schema.json)')
+    # wb.active = wb.sheetnames.index('要件定義(invoice.schema.json)')
 
     # 出力ファイル名の取得
     output_dir = args.out
-    #template_dir = args.dir
-    prefix = 'RDEDatasetTemplateSheet'
-    output_file = f'{Path(f"{output_dir}")}/{prefix}_{Path(f"{template_dir}").name}.xlsx'
-    if args.verbosity >=2:
-        print(f'output_file: {output_file}')
+    # template_dir = args.dir
+    prefix = "RDEDatasetTemplateSheet"
+    output_file = (
+        f'{Path(f"{output_dir}")}/{prefix}_{Path(f"{template_dir}").name}.xlsx'
+    )
+    if args.verbosity >= 2:
+        print(f"output_file: {output_file}")
 
     # Excelファイルの保存
     wb.save(output_file)
 
     conn.close()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     args = prepare()
     main(args)
