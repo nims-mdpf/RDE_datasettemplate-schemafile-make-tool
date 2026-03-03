@@ -1,40 +1,59 @@
-# template2excel
+# テンプレートファイルからExcelファイル生成ツール
+
+> ツールバージョン : 2026.01.20(e)
 
 ## 概要
 
-- このツールは、`Excelファイルを読み込みテンプレートファイル(invoice.schema.json,catalog.schema.json and metadata-def.json)を生成する`ツール(excel2template)の逆の機能を提供します。
+本ツールは、指定されたRDEテンプレートファイル(invoice.schema.json、metadata-def.json、catalog.schema.json)を読み込み、テンプレートファイル生成用のExcelファイルを生成するためのものです。
 
-- `既存のテンプレートファイル`からテンプレート生成用エクセル書式ファイルを作る際にご利用ください。
+参考にしたいRDEデータセットがすでにあり、少しだけ修正して自分用のテンプレートファイルを作成する場合にご利用いただけます。
 
+## 前提
+
+本ツールは、Linux環境(Windows上のWSLを含む)での実行を想定しています。
+
+Macなどその他の環境でも動作すると思われますが、未検証です。
+
+## 導入
+
+先に依存ツールをインストールしてください。
+
+venvを利用している場合は、当該環境を有効にします。
+
+```bash
+source <path to venv>/bin/activate
+```
+
+続いて、依存ライブラリをインストールします。
+
+```bash
+pip install -r requirements.txt
+```
+
+あとは、本ツール(template2excel.py)を、実行したいディレクトリに配置するだけです。
 
 ## 使い方
 
-- Pythonで実行します
-- ファイルは`template2excel.py`のみです
-- openpyxlを利用しますのでinstallして利用してください
-
-
-### helpの表示
-```
-$ python template2excel.py -h        
-usage: template2excel.py [-h] [--dir DIR] [--out OUT] [-v]
-
-options:
-  -h, --help       show this help message and exit
-  --dir DIR        Specify foldername where template files are stored[default=./template]
-  --out OUT        Specify foldername where Excel file will be output [default=./]
-  -v, --verbosity  Increase output verbosity
+```bash
+python [オプション指定] ./template2excel.py
 ```
 
-読み込むテンプレートファイルをフォルダにまとめて保存し、以下のように実行します。
+指定できるオプションは、以下の通りです。
+
+| オプション | 意味 | デフォルト | 例 | 備考 |
+| ---- | ---- | ---- | ---- | ---- |
+| --dir | 入力のテンプレートファイルを配置するディレクトリを指定 | ./template | --dir ./XRD_template | |
+| --out | 出力するExcelファイルの出力先ディレクトリを指定 | ./ | --out ./out | 指定されたディレクトリが存在し、かつ、書き込み可能である必要があります |
+| -v --verbosity | 出力メッセージレベルを0,1,2のいずれかを指定 | 0 | --verbosity 2 | 数字が大きいほど詳細メッセージを出力 |
+
+出力されるExcelファイル名は、以下の要領で決定します。
+
 ```
-$ python template2excel.py --dir ./template
+< --outで指定したディレクトリ>/RDEDatasetTemplateSheet_< --dirで指定したディレクトリ名 >.xlsx
 ```
 
-実行すると、ツールを起動したフォルダにRDEDatasetTemplateSheet_template.xlsxが作成されます。なお、読み込み先のフォルダ名がtemplateの場合は以下のようにオプションを省略できます。
-```
-$ python template2excel.py
-```
-なお、出力するエクセルファイルは上書きされます。
+> 他のファイル名にしたい場合は、生成後`mv`コマンドやその他のツールにて変更してください。
 
-以上
+## 制限
+
+* invoice.jsonやcatalog.jsonから、指定値(の例)を取り込む処理は実装していません。そのため、出来上がったExcelファイルをもとにテンプレート生成ツールにて再度テンプレートファイルを生成した場合は、もとのテンプレートファイルとは異なるファイルが生成されます。
