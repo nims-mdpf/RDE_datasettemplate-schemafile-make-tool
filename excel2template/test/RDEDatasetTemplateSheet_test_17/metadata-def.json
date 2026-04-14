@@ -1,0 +1,54 @@
+{
+    "key_string": {
+        "name": {
+            "ja": "key_string",
+            "en": "key_string"
+        },
+        "schema": {
+            "type": "string"
+        },
+        "description": "文字列"
+    },
+    "key_datetime": {
+        "name": {
+            "ja": "key_datetime",
+            "en": "key_datetime"
+        },
+        "schema": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "description": "日付文字列"
+    },
+    "key_int": {
+        "name": {
+            "ja": "key_int",
+            "en": "key_int"
+        },
+        "schema": {
+            "type": "integer"
+        },
+        "unit": "pcs",
+        "description": "整数"
+    },
+    "key_number": {
+        "name": {
+            "ja": "key_number",
+            "en": "key_number"
+        },
+        "schema": {
+            "type": "number"
+        },
+        "unit": "nm",
+        "description": "実数"
+    },
+    "key_boolean": {
+        "name": {
+            "ja": "key_boolean",
+            "en": "key_boolean"
+        },
+        "schema": {
+            "type": "boolean"
+        }
+    }
+}

@@ -1,0 +1,32 @@
+{
+  "datasetId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+  "basic": {
+    "dateSubmitted": "2026-04-14",
+    "dataOwnerId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "dataName": "%%data_name%%",
+    "instrumentId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
+    "experimentId": "%%experiment_id%%",
+    "description": "%%description%%"
+  },
+  "custom": {
+    "my_date": "2026-04-02",
+    "my_int": 1,
+    "my_number": 1.2,
+    "my_string": "Aa123文字列",
+    "my_textarea": "テキストエリア",
+    "my_list": "a",
+    "my_boolean": true
+  },
+  "sample": {
+    "sampleId": "",
+    "names": [
+      "null"
+    ],
+    "ownerId": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+    "composition": "null",
+    "referenceUrl": "null",
+    "related_samples": "null",
+    "tags": "null",
+    "description": "null"
+  }
+}

@@ -1,0 +1,139 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/RDEDatasetTemplateSheet_test_08/invoice.schema.json",
+    "description": "送状定義/固有情報の項目あり、試料情報共通項目なし、一般項目なし、分類別項目あり: 送状定義",
+    "type": "object",
+    "required": [
+        "custom",
+        "sample"
+    ],
+    "properties": {
+        "custom": {
+            "type": "object",
+            "label": {
+                "ja": "固有情報",
+                "en": "Custom Information"
+            },
+            "required": [
+                "my_date"
+            ],
+            "properties": {
+                "my_date": {
+                    "label": {
+                        "ja": "日付情報",
+                        "en": "my_date"
+                    },
+                    "type": "string",
+                    "format": "date",
+                    "description": "日付情報",
+                    "examples": "2026-04-02",
+                    "options": {
+                        "placeholder": {
+                            "ja": "日付情報を入力してください",
+                            "en": "input date yyyy-mm-dd"
+                        }
+                    }
+                },
+                "my_int": {
+                    "label": {
+                        "ja": "整数情報",
+                        "en": "my_int"
+                    },
+                    "type": "integer",
+                    "description": "整数情報",
+                    "examples": 1,
+                    "options": {
+                        "unit": "unit"
+                    },
+                    "maximum": 1.0
+                },
+                "my_number": {
+                    "label": {
+                        "ja": "数値情報",
+                        "en": "my_number"
+                    },
+                    "type": "number",
+                    "description": "数値情報",
+                    "examples": 1.2,
+                    "default": 1.2,
+                    "const": 1.2
+                },
+                "my_string": {
+                    "label": {
+                        "ja": "文字列情報",
+                        "en": "my_string"
+                    },
+                    "type": "string",
+                    "description": "文字列情報",
+                    "examples": "Aa123文字列",
+                    "maxLength": 20
+                },
+                "my_textarea": {
+                    "label": {
+                        "ja": "文字列テキストエリア",
+                        "en": "my_textarea"
+                    },
+                    "type": "string",
+                    "description": "文字列テキストエリア",
+                    "examples": "テキストエリア",
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 8
+                    }
+                },
+                "my_list": {
+                    "label": {
+                        "ja": "リスト項目",
+                        "en": "my_list"
+                    },
+                    "type": "string",
+                    "description": "選択項目",
+                    "examples": "a",
+                    "enum": [
+                        "a",
+                        "b",
+                        "c"
+                    ]
+                },
+                "my_boolean": {
+                    "label": {
+                        "ja": "真偽値",
+                        "en": "my_boolean"
+                    },
+                    "type": "boolean",
+                    "description": "真偽値",
+                    "examples": true
+                }
+            }
+        },
+        "sample": {
+            "type": "object",
+            "label": {
+                "ja": "試料情報",
+                "en": "Sample Information"
+            },
+            "properties": {
+                "specificAttributes": {
+                    "type": "array",
+                    "items": [
+                        {
+                            "type": "object",
+                            "required": [
+                                "classId",
+                                "termId"
+                            ],
+                            "properties": {
+                                "classId": {
+                                    "const": "01cb3c01-37a4-5a43-d8ca-f523ca99a75b"
+                                },
+                                "termId": {
+                                    "const": "3250c45d-0ed6-1438-43b5-eb679918604a"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}
