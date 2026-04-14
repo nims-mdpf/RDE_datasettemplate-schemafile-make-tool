@@ -1,0 +1,109 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/RDEDatasetTemplateSheet_test_09/catalog.schema.json",
+    "type": "object",
+    "required": [
+        "catalog"
+    ],
+    "description": "送状定義/固有情報の項目なし、試料情報共通項目あり、一般項目なし、分類別項目なし: データカタログ定義",
+    "properties": {
+        "catalog": {
+            "type": "object",
+            "label": {
+                "ja": "RDEDatasetTemplateSheet_test_09:データカタログ定義",
+                "en": "RDEDatasetTemplateSheet_test_09:data catalog format"
+            },
+            "required": [],
+            "properties": {
+                "dataset_title": {
+                    "label": {
+                        "ja": "データセット名",
+                        "en": "Dataset Title"
+                    },
+                    "type": "string",
+                    "examples": "dtaset_title"
+                },
+                "data_creator": {
+                    "label": {
+                        "ja": "作成者",
+                        "en": "Data Creator"
+                    },
+                    "type": "string",
+                    "examples": "data_creator"
+                },
+                "experimental_apparatus": {
+                    "label": {
+                        "ja": "使用装置",
+                        "en": "Experimental Apparatus"
+                    },
+                    "type": "string",
+                    "examples": "experimental_apparatus",
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 2
+                    }
+                },
+                "data_distribution": {
+                    "label": {
+                        "ja": "データの再配布",
+                        "en": "Data Distribution"
+                    },
+                    "type": "string",
+                    "examples": "data_distribution",
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 5
+                    }
+                },
+                "raw_data_type": {
+                    "label": {
+                        "ja": "データの種類",
+                        "en": "Raw Data Type"
+                    },
+                    "type": "string",
+                    "examples": "raw_data_type",
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 5
+                    }
+                },
+                "stored_data": {
+                    "label": {
+                        "ja": "格納データ",
+                        "en": "Stored Data"
+                    },
+                    "type": "string",
+                    "examples": "stored_data",
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 5
+                    }
+                },
+                "remarks": {
+                    "label": {
+                        "ja": "備考",
+                        "en": "Remarks"
+                    },
+                    "type": "string",
+                    "examples": "remarks",
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 5
+                    }
+                },
+                "references": {
+                    "label": {
+                        "ja": "参考文献",
+                        "en": "References"
+                    },
+                    "type": "string",
+                    "examples": "references",
+                    "options": {
+                        "widget": "textarea",
+                        "rows": 5
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,19 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/RDEDatasetTemplateSheet_test_09/invoice.schema.json",
+    "description": "送状定義/固有情報の項目なし、試料情報共通項目あり、一般項目なし、分類別項目なし: 送状定義",
+    "type": "object",
+    "required": [
+        "sample"
+    ],
+    "properties": {
+        "sample": {
+            "type": "object",
+            "label": {
+                "ja": "試料情報",
+                "en": "Sample Information"
+            },
+            "properties": {}
+        }
+    }
+}

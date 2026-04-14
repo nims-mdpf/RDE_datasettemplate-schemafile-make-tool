@@ -1,0 +1,43 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/RDEDatasetTemplateSheet_test_11/invoice.schema.json",
+    "description": "送状定義/固有情報の項目ありパラメータ名重複、試料情報なし: 送状定義",
+    "type": "object",
+    "required": [
+        "custom"
+    ],
+    "properties": {
+        "custom": {
+            "type": "object",
+            "label": {
+                "ja": "固有情報",
+                "en": "Custom Information"
+            },
+            "required": [
+                "my_date"
+            ],
+            "properties": {
+                "my_date": {
+                    "label": {
+                        "ja": "日付情報2",
+                        "en": "my_data2"
+                    },
+                    "type": "string",
+                    "format": "date",
+                    "description": "日付情報2",
+                    "examples": "2026-04-02",
+                    "maximum": 1.0
+                },
+                "my_int": {
+                    "label": {
+                        "ja": "整数情報",
+                        "en": "my_int"
+                    },
+                    "type": "integer",
+                    "description": "整数情報",
+                    "examples": 1
+                }
+            }
+        }
+    }
+}

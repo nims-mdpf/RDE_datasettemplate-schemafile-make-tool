@@ -1,0 +1,8 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/RDEDatasetTemplateSheet_test_01/invoice.schema.json",
+    "description": "送状定義/固有情報の項目なし、試料情報なし: 送状定義",
+    "type": "object",
+    "required": [],
+    "properties": {}
+}

@@ -1,0 +1,8 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://rde.nims.go.jp/rde/dataset-templates/RDEDatasetTemplateSheet_test_14/invoice.schema.json",
+    "description": "カタログ定義/項目重複あり: 送状定義",
+    "type": "object",
+    "required": [],
+    "properties": {}
+}

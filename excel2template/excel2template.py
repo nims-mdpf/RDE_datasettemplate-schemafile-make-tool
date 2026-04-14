@@ -1,6 +1,8 @@
 # -------------------------------------------------
 # excel2template.py for RDE developers
-# version 1.3.0 2026/01/20
+# version 1.3.2 2026/04/14
+# version 1.3.1 2026/03/31
+# version 1.2.1 2026/01/07
 
 # This program is for creating dataset template definition files in RDE.
 #
@@ -10,7 +12,7 @@
 # -------------------------------------------------
 
 __author__ = "NIMS MDPF"
-__version__ = "1.3.0"
+__version__ = "1.3.2"
 __license__ = "MIT"
 
 from pathlib import Path
@@ -58,7 +60,9 @@ def check_value(value, boolean=False):
     if boolean:
         return (not value == "None") and (value == "True")
     else:
-        return (not value == "None") and (not len(value.strip()) == 0)
+        if value is None:
+            return False
+        return not value == "None"
 
 
 def get_dup_columns(d, col_name):
@@ -68,12 +72,33 @@ def get_dup_columns(d, col_name):
     return dup
 
 
-def check_dup_params(d, category_name, outfile):
+def check_dup_params(d: dict, category_name: str, outfile: str) -> None:
     """重複するパラメータがあればエラーを出す機能"""
     dup_params = get_dup_columns(d, "parameter_name")
     if dup_params:
         raise ExcelError(
             f"要件定義（{outfile.name}）シートの{category_name=}について、重複する行が確認されました: {dup_params}"
+        )
+
+
+def check_req_params(d: list[dict], category_name: str, outfile: str) -> None:
+    """必須項目が抜けているパラメータがあればエラーを出す機能"""
+    if category_name == "metadata":
+        # metadata-def
+        required_keys = ["parameter_name", "name/ja", "name/en"]
+    else:
+        # invoice,catalog
+        required_keys = ["parameter_name", "label/ja", "label/en"]
+
+    missing_rows = []
+    for i, row in enumerate(d, start=1):
+        missing_keys = [key for key in required_keys if row.get(key) in (None, "None")]
+        if missing_keys:
+            missing_rows.append({"row": i, "missing_key": missing_keys})
+
+    if missing_rows:
+        raise ExcelError(
+            f"要件定義（{outfile.name}）シートの{category_name=}について、必須項目が未指定の行が確認されました: {missing_rows}"
         )
 
 
@@ -92,14 +117,14 @@ def dtype_is_expected(dtype, expected_dtypes):
 
 def get_validated_value(param, d, expected_dtypes, outfile):
     """JSONに格納すべき値を得る機能"""
-    example = d["examples"] if check_value(d["examples"]) else None
-    default = d["default"] if check_value(d["default"]) else None
-    const = d["const"] if check_value(d["const"]) else None
-    enum = d["enum"].split(",") if check_value(d["enum"]) else None
-    required = check_value(d["required"], boolean=True)
-    format_v = d["format"]
-    pattern = d["pattern"] if check_value(d["pattern"]) else None
-    dtype = d["type"]
+    example = d.get("examples", None) if check_value(d.get("examples", None)) else None
+    default = d.get("default", None) if check_value(d.get("default", None)) else None
+    const = d.get("const") if check_value(d.get("const")) else None
+    enum = d.get("enum", None).split(",") if check_value(d.get("enum", None)) else None
+    required = check_value(d.get("required", None), boolean=True)
+    format_v = d.get("format", None)
+    pattern = d.get("pattern", None) if check_value(d.get("pattern", None)) else None
+    dtype = d.get("type", None)
     sheet = outfile.name
     sheet_info = f"parameter_name={param}, {example=}, {default=}, {const=}, {sheet=}"
 
@@ -142,15 +167,26 @@ def get_validated_value(param, d, expected_dtypes, outfile):
 
     # vが数値の場合、vが与えられた範囲内か調べる
     if v and dtype in ["number", "int"]:
-        nmax = float(d["maximum"]) if check_value(d["maximum"]) else None
+        nmax = (
+            float(d.get("maximum", None))
+            if check_value(d.get("maximum", None))
+            else None
+        )
         exmax = (
-            float(d["exclusiveMaximum"]) if check_value(d["exclusiveMaximum"]) else None
+            float(d.get("exclusiveMaximum", None))
+            if check_value(d.get("exclusiveMaximum", None))
+            else None
         )
-        nmin = float(d["minimum"]) if check_value(d["minimum"]) else None
+        nmin = (
+            float(d.get("minimum", None))
+            if check_value(d.get("minimum", None))
+            else None
+        )
         exmin = (
-            float(d["exclusiveMinimum"]) if check_value(d["exclusiveMinimum"]) else None
+            float(d.get("exclusiveMinimum", None))
+            if check_value(d.get("exclusiveMinimum", None))
+            else None
         )
-
         if (
             (nmin and v < nmin)
             or (exmin and v <= exmin)
@@ -165,8 +201,16 @@ def get_validated_value(param, d, expected_dtypes, outfile):
 
     # vが文字列の場合、文字数が与えられた範囲内か調べる
     if v and dtype == "string":
-        smax = int(d["maxLength"]) if check_value(d["maxLength"]) else None
-        smin = int(d["minLength"]) if check_value(d["minLength"]) else None
+        smax = (
+            int(d.get("maxLength", None))
+            if check_value(d.get("maxLength", None))
+            else None
+        )
+        smin = (
+            int(d.get("minLength", None))
+            if check_value(d.get("minLength", None))
+            else None
+        )
         slen = len(v)
         if (smin and slen < smin) or (smax and smax < slen):
             raise ExcelError(
@@ -206,10 +250,12 @@ def read_invoice_catalog_sheet(ws):
         else:
             if not row[0].value is None:
                 category = row[0].value
-            data.append({
-                **{"category": category},
-                **{k.value: str(v.value) for k, v in zip(header, row[1:])},
-            })
+            data.append(
+                {
+                    **{"category": category},
+                    **{k.value: str(v.value) for k, v in zip(header, row[1:])},
+                }
+            )
 
         # ヘッダー部の取得
         if row[0].value == "header":
@@ -219,7 +265,7 @@ def read_invoice_catalog_sheet(ws):
 
 
 def read_simple_sheet(ws, skipheader=0):
-    """metadefのシートからデータを取得する機能"""
+    """用語シートからデータを取得する機能"""
     data = []
     for row in ws.rows:
         # 不要な行はスキップする
@@ -277,58 +323,82 @@ def convert_metadata_def(wb, output_dir):
         return None
 
     # Excelからデータを読み込む
+    category_name = "metadata"
     data = read_simple_sheet(ws, skipheader=2)
+
+    # データを抽出する
+    data_on = [d for d in data if d.get("output", None) == "ON"]
+
+    data_metadata = [d for d in data_on if d["output"] == "ON"]
+    check_dup_params(data_metadata, category_name, outfile)
+    check_req_params(data_metadata, category_name, outfile)
 
     # json形式で整理する
     jdata = defaultdict(dict)
     for d in data:
-        if d["output"] == "OFF":
+        if d.get("output", None) == "OFF":
             continue
 
-        jdata[d["parameter_name"]]["name"] = defaultdict(dict)
-        jdata[d["parameter_name"]]["schema"] = defaultdict(dict)
+        jdata[d.get("parameter_name", None)]["name"] = defaultdict(dict)
+        jdata[d.get("parameter_name", None)]["schema"] = defaultdict(dict)
 
         # 項目名(日本語)
-        jdata[d["parameter_name"]]["name"]["ja"] = d["name/ja"]
+        jdata[d.get("parameter_name", None)]["name"]["ja"] = d.get("name/ja", None)
         # 項目名(英語)
-        jdata[d["parameter_name"]]["name"]["en"] = d["name/en"]
+        jdata[d.get("parameter_name", None)]["name"]["en"] = d.get("name/en", None)
         # データ型
-        jdata[d["parameter_name"]]["schema"]["type"] = d["type"]
+        jdata[d.get("parameter_name", None)]["schema"]["type"] = d.get("type", None)
         # 表示順序
-        if ("order" in d) and d["order"] != "None" and len(d["order"].strip()) > 0:
-            jdata[d["parameter_name"]]["order"] = int(d["order"])
+        if (
+            ("order" in d)
+            and d.get("order") != "None"
+            and len(d.get("order").strip()) > 0
+        ):
+            jdata[d.get("parameter_name", None)]["order"] = int(d.get("order"))
         # フォーマット
-        if check_value(d["format"]):
-            jdata[d["parameter_name"]]["schema"]["format"] = d["format"]
+        if check_value(d.get("format", None)):
+            jdata[d.get("parameter_name", None)]["schema"]["format"] = d.get(
+                "format", None
+            )
         # 単位
-        if check_value(d["unit"]):
-            jdata[d["parameter_name"]]["unit"] = d["unit"]
+        if check_value(d.get("unit", None)):
+            jdata[d.get("parameter_name", None)]["unit"] = d.get("unit", None)
         # 説明
-        if check_value(d["description"]):
-            jdata[d["parameter_name"]]["description"] = d["description"]
+        if check_value(d.get("description", None)):
+            jdata[d.get("parameter_name", None)]["description"] = d.get(
+                "description", None
+            )
         # URI
-        if check_value(d["uri"]):
-            jdata[d["parameter_name"]]["uri"] = d["uri"]
+        if check_value(d.get("uri", None)):
+            jdata[d.get("parameter_name", None)]["uri"] = d.get("uri", None)
         # 測定モード
-        if check_value(d["mode"]):
-            jdata[d["parameter_name"]]["mode"] = d["mode"]
-        # Variable
-        if check_value(d["variable"]):
-            jdata[d["parameter_name"]]["variable"] = 1
+        if check_value(d.get("mode", None)):
+            jdata[d.get("parameter_name", None)]["mode"] = d.get("mode", None)
+        # Variable)
+        if check_value(d.get("variable", None)):
+            jdata[d.get("parameter_name", None)]["variable"] = 1
         # 固定値
-        if check_value(d["default"], boolean=True):
-            jdata[d["parameter_name"]]["default"] = convert_value(
-                d["type"], d["sample"]
+        if check_value(d.get("default", None), boolean=True):
+            jdata[d.get("parameter_name", None)]["default"] = convert_value(
+                d.get("type", None), d.get("sample", None)
             )
         # 装置出力
-        if ("original_name" in d) and check_value(d["original_name"]):
-            jdata[d["parameter_name"]]["original_name"] = d["original_name"]
-        if ("original_type" in d) and check_value(d["original_type"]):
-            jdata[d["parameter_name"]]["original_type"] = d["original_type"]
-        if ("originalName" in d) and check_value(d["originalName"]):
-            jdata[d["parameter_name"]]["originalName"] = d["originalName"]
-        if ("originalType" in d) and check_value(d["originalType"]):
-            jdata[d["parameter_name"]]["originalType"] = d["originalType"]
+        if ("original_name" in d) and check_value(d.get("original_name", None)):
+            jdata[d.get("parameter_name", None)]["original_name"] = d.get(
+                "original_name", None
+            )
+        if ("original_type" in d) and check_value(d.get("original_type", None)):
+            jdata[d.get("parameter_name", None)]["original_type"] = d.get(
+                "original_type", None
+            )
+        if ("originalName" in d) and check_value(d.get("originalName", None)):
+            jdata[d.get("parameter_name", None)]["originalName"] = d.get(
+                "originalName", None
+            )
+        if ("originalType" in d) and check_value(d.get("originalType", None)):
+            jdata[d.get("parameter_name", None)]["originalType"] = d.get(
+                "originalType", None
+            )
 
     # JSON形式で出力
     json_dump(jdata, outfile)
@@ -368,6 +438,7 @@ def _read_invoice_src_sheets(wb, output_dir, sheet_name):
     dup_keys = get_dup_columns(data_st, "key_name")
     if dup_keys:
         sheet_name = get_sheet_name(data_st)
+        raise ExcelError(f"{sheet_name}に複数の {dup_keys}（key_name）が存在します")
 
     return common_data, data, data_gt, data_st, outfile
 
@@ -419,7 +490,12 @@ def _convert_invoice_schema_impl(rtn_v):
     jdata["properties"] = defaultdict(dict)
 
     # customの共通部分
-    if any([d["output"] != "OFF" and d["category"] == "custom" for d in data]):
+    if any(
+        [
+            d.get("output", None) != "OFF" and d.get("category", None) == "custom"
+            for d in data
+        ]
+    ):
         jdata["required"].append("custom")
 
         # properties/custom
@@ -436,7 +512,13 @@ def _convert_invoice_schema_impl(rtn_v):
         jdata["properties"]["custom"]["properties"] = defaultdict(dict)
 
     # sampleの共通部分
-    if any([d["output"] != "OFF" and d["category"].startswith("sample") for d in data]):
+    if any(
+        [
+            d.get("output", None) != "OFF"
+            and d.get("category", None).startswith("sample")
+            for d in data
+        ]
+    ):
         jdata["required"].append("sample")
 
         # properties/sample
@@ -451,7 +533,13 @@ def _convert_invoice_schema_impl(rtn_v):
         jdata["properties"]["sample"]["properties"] = defaultdict(dict)
 
     # sample generalAttributesの部分
-    if any([d["output"] != "OFF" and d["category"] == "sample_general" for d in data]):
+    if any(
+        [
+            d.get("output", None) != "OFF"
+            and d.get("category", None) == "sample_general"
+            for d in data
+        ]
+    ):
         # properties/sample/properties/generalAttributes
         jdata["properties"]["sample"]["properties"]["generalAttributes"] = defaultdict(
             dict
@@ -464,7 +552,13 @@ def _convert_invoice_schema_impl(rtn_v):
         jdata["properties"]["sample"]["properties"]["generalAttributes"]["items"] = []
 
     # sample specificAttributesの部分
-    if any([d["output"] != "OFF" and d["category"] == "sample_specific" for d in data]):
+    if any(
+        [
+            d.get("output", None) != "OFF"
+            and d.get("category", None) == "sample_specific"
+            for d in data
+        ]
+    ):
         # properties/sample/properties/specificAttributes
         jdata["properties"]["sample"]["properties"]["specificAttributes"] = defaultdict(
             dict
@@ -477,177 +571,210 @@ def _convert_invoice_schema_impl(rtn_v):
         jdata["properties"]["sample"]["properties"]["specificAttributes"]["items"] = []
 
     for d in data:
-        if d["output"] == "OFF":
+        if d.get("output", None) == "OFF":
             continue
 
         # customの部分
-        if d["category"] == "custom":
-            jdata["properties"]["custom"]["properties"][d["parameter_name"]] = (
-                defaultdict(dict)
-            )
+        if d.get("category", None) == "custom":
+            jdata["properties"]["custom"]["properties"][
+                d.get("parameter_name", None)
+            ] = defaultdict(dict)
 
             # 項目名(日本語)
-            jdata["properties"]["custom"]["properties"][d["parameter_name"]]["label"][
-                "ja"
-            ] = d["label/ja"]
+            jdata["properties"]["custom"]["properties"][d.get("parameter_name", None)][
+                "label"
+            ]["ja"] = d.get("label/ja", None)
             # 項目名(英語)
-            jdata["properties"]["custom"]["properties"][d["parameter_name"]]["label"][
-                "en"
-            ] = d["label/en"]
+            jdata["properties"]["custom"]["properties"][d.get("parameter_name", None)][
+                "label"
+            ]["en"] = d.get("label/en", None)
             # データ型
-            jdata["properties"]["custom"]["properties"][d["parameter_name"]]["type"] = (
-                d["type"]
-            )
+            jdata["properties"]["custom"]["properties"][d.get("parameter_name", None)][
+                "type"
+            ] = d.get("type", None)
             # 必須項目
-            if check_value(d["required"], boolean=True):
-                jdata["properties"]["custom"]["required"].append(d["parameter_name"])
+            if check_value(d.get("required", None), boolean=True):
+                jdata["properties"]["custom"]["required"].append(
+                    d.get("parameter_name", None)
+                )
             # フォーマット
-            if check_value(d["format"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "format"
-                ] = d["format"]
+            if check_value(d.get("format", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["format"] = d.get("format", None)
             # 説明
-            if check_value(d["description"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "description"
-                ] = d["description"]
+            if check_value(d.get("description", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["description"] = d.get("description", None)
             # 内容サンプル
-            if check_value(d["examples"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "examples"
-                ] = convert_value(d["type"], d["examples"])
+            if check_value(d.get("examples", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["examples"] = convert_value(
+                    d.get("type", None), d.get("examples", None)
+                )
             # 初期値
-            if check_value(d["default"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "default"
-                ] = convert_value(d["type"], d["default"])
+            if check_value(d.get("default", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["default"] = convert_value(
+                    d.get("type", None), d.get("default", None)
+                )
             # 固定値
-            if check_value(d["const"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "const"
-                ] = convert_value(d["type"], d["const"])
+            if check_value(d.get("const")):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["const"] = convert_value(d.get("type", None), d.get("const"))
             # 値のリスト
-            if check_value(d["enum"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "enum"
-                ] = [convert_value(d["type"], v.strip()) for v in d["enum"].split(",")]
+            if check_value(d.get("enum", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["enum"] = [
+                    convert_value(d.get("type", None), v.strip())
+                    for v in d.get("enum", None).split(",")
+                ]
             # テキストエリア
-            if check_value(d["options/widget"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "options"
-                ]["widget"] = d["options/widget"]
+            if check_value(d.get("options/widget", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["options"]["widget"] = d.get("options/widget", None)
             # 行数
-            if check_value(d["options/rows"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "options"
-                ]["rows"] = int(d["options/rows"])
+            if check_value(d.get("options/rows", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["options"]["rows"] = int(d.get("options/rows", None))
             # 単位
-            if check_value(d["options/unit"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "options"
-                ]["unit"] = d["options/unit"]
+            if check_value(d.get("options/unit", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["options"]["unit"] = d.get("options/unit", None)
             # プレイスホルダ
-            if check_value(d["options/placeholder/ja"]) or check_value(
-                d["options/placeholder/en"]
+            if check_value(d.get("options/placeholder/ja", None)) or check_value(
+                d.get("options/placeholder/en", None)
             ):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "options"
-                ]["placeholder"] = defaultdict(dict)
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["options"]["placeholder"] = defaultdict(dict)
             # プレイスホルダ(日本語)
-            if check_value(d["options/placeholder/ja"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "options"
-                ]["placeholder"]["ja"] = d["options/placeholder/ja"]
+            if check_value(d.get("options/placeholder/ja", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["options"]["placeholder"]["ja"] = d.get(
+                    "options/placeholder/ja", None
+                )
             # プレイスホルダ(英語)
-            if check_value(d["options/placeholder/en"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "options"
-                ]["placeholder"]["en"] = d["options/placeholder/en"]
+            if check_value(d.get("options/placeholder/en", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["options"]["placeholder"]["en"] = d.get(
+                    "options/placeholder/en", None
+                )
             # 数値上限(以下)
-            if check_value(d["maximum"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "maximum"
-                ] = float(d["maximum"])
+            if check_value(d.get("maximum", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["maximum"] = float(d.get("maximum", None))
             # 数値上限(未満)
-            if check_value(d["exclusiveMaximum"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "exclusiveMaximum"
-                ] = float(d["exclusiveMaximum"])
+            if check_value(d.get("exclusiveMaximum", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["exclusiveMaximum"] = float(d.get("exclusiveMaximum", None))
             # 数値下限(以上)
-            if check_value(d["minimum"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "minimum"
-                ] = float(d["minimum"])
+            if check_value(d.get("minimum", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["minimum"] = float(d.get("minimum", None))
             # 数値下限(より上)
-            if check_value(d["exclusiveMinimum"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "exclusiveMinimum"
-                ] = float(d["exclusiveMinimum"])
+            if check_value(d.get("exclusiveMinimum", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["exclusiveMinimum"] = float(d.get("exclusiveMinimum", None))
             # 最大文字数
-            if check_value(d["maxLength"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "maxLength"
-                ] = int(d["maxLength"])
+            if check_value(d.get("maxLength", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["maxLength"] = int(d.get("maxLength", None))
             # 最小文字数
-            if check_value(d["minLength"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "minLength"
-                ] = int(d["minLength"])
+            if check_value(d.get("minLength", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["minLength"] = int(d.get("minLength", None))
             # 正規表現
-            if check_value(d["pattern"]):
-                jdata["properties"]["custom"]["properties"][d["parameter_name"]][
-                    "pattern"
-                ] = d["pattern"]
+            if check_value(d.get("pattern", None)):
+                jdata["properties"]["custom"]["properties"][
+                    d.get("parameter_name", None)
+                ]["pattern"] = d.get("pattern", None)
 
         # sample_commonの部分
-        if d["category"] == "sample_common":
+        if d.get("category", None) == "sample_common":
             continue
 
         # sample_generalの部分
-        if d["category"] == "sample_general":
+        if d.get("category", None) == "sample_general":
+            if d.get("output", None) == "None":
+                continue
+            if d.get("term", None) == "None":
+                continue
             jdata["properties"]["sample"]["properties"]["generalAttributes"][
                 "items"
-            ].append({
-                "type": "object",
-                "required": ["termId"],
-                "properties": {
-                    "termId": {
-                        "const": list(
-                            filter(
-                                lambda x: x["dict.term.name_ja"] == d["term"],
-                                data_gt,
-                            )
-                        )[0]["term_id"]
-                    }
-                },
-            })
+            ].append(
+                {
+                    "type": "object",
+                    "required": ["termId"],
+                    "properties": {
+                        "termId": {
+                            "const": list(
+                                filter(
+                                    lambda x: (
+                                        x["dict.term.name_ja"] == d.get("term", None)
+                                    ),
+                                    data_gt,
+                                )
+                            )[0]["term_id"]
+                        }
+                    },
+                }
+            )
 
         # sample_specificの部分
-        if d["category"] == "sample_specific":
+        if d.get("category", None) == "sample_specific":
+            if d.get("output", None) == "None":
+                continue
+            if d.get("term", None) == "None":
+                continue
             jdata["properties"]["sample"]["properties"]["specificAttributes"][
                 "items"
-            ].append({
-                "type": "object",
-                "required": ["classId", "termId"],
-                "properties": {
-                    "classId": {
-                        "const": list(
-                            filter(
-                                lambda x: x["bind_class_and_term_ja"] == d["term"],
-                                data_st,
-                            )
-                        )[0]["sample_class_id"]
+            ].append(
+                {
+                    "type": "object",
+                    "required": ["classId", "termId"],
+                    "properties": {
+                        "classId": {
+                            "const": list(
+                                filter(
+                                    lambda x: (
+                                        x["bind_class_and_term_ja"]
+                                        == d.get("term", None)
+                                    ),
+                                    data_st,
+                                )
+                            )[0]["sample_class_id"]
+                        },
+                        "termId": {
+                            "const": list(
+                                filter(
+                                    lambda x: (
+                                        x["bind_class_and_term_ja"]
+                                        == d.get("term", None)
+                                    ),
+                                    data_st,
+                                )
+                            )[0]["term_id"]
+                        },
                     },
-                    "termId": {
-                        "const": list(
-                            filter(
-                                lambda x: x["bind_class_and_term_ja"] == d["term"],
-                                data_st,
-                            )
-                        )[0]["term_id"]
-                    },
-                },
-            })
+                }
+            )
 
     # JSON形式で出力
     json_dump(jdata, outfile)
@@ -675,9 +802,7 @@ def _convert_invoice_example_impl(rtn_v):
     _, data, data_gt, data_st, outfile = rtn_v
 
     # データを抽出する
-    data_on = [
-        d for d in data if check_value(d["parameter_name"]) and d["output"] == "ON"
-    ]
+    data_on = [d for d in data if d.get("output", None) == "ON"]
 
     # json形式で整理する
     jdata = defaultdict(dict)
@@ -699,9 +824,10 @@ def _convert_invoice_example_impl(rtn_v):
 
     # 重複するパラメータがあればエラーを出す
     check_dup_params(data_custom, category_name, outfile)
+    check_req_params(data_custom, category_name, outfile)
 
     for d in data_custom:
-        param = d["parameter_name"]
+        param = d.get("parameter_name", None)
         # JSONに格納すべき値を得る
         v = get_validated_value(param, d, expected_dtypes, outfile)
         jdata["custom"][param] = v
@@ -709,7 +835,7 @@ def _convert_invoice_example_impl(rtn_v):
     # sample - 資料情報
     # 資料情報全体にoutput==ONである行が１つ以上存在する場合は、sample_commonの全7行を出力する
     samples = ["sample_common", "sample_general", "sample_specific"]
-    data_samples = [d for d in data_on if d["category"] in samples]
+    data_samples = [d for d in data_on if d.get("category", None) in samples]
 
     if data_samples:
         # sample_common - 資料情報（共通項目）
@@ -717,11 +843,13 @@ def _convert_invoice_example_impl(rtn_v):
         data_sample_c = [
             d
             for d in data
-            if check_value(d["parameter_name"]) and d["category"] == category_name
+            if check_value(d.get("parameter_name", None))
+            and d.get("category", None) == category_name
         ]
 
         # 重複するパラメータがあればエラーを出す
         check_dup_params(data_sample_c, category_name, outfile)
+        check_req_params(data_sample_c, category_name, outfile)
 
         # Excelのパラメータ名とJSONのプロパティ名の対応（要確認）
         param2prop = {
@@ -742,8 +870,12 @@ def _convert_invoice_example_impl(rtn_v):
         jdata["sample"][param2prop["administrator_(affiliation)"]] = default_string_56
 
         for d in data_sample_c:
-            param = d["parameter_name"]
-            example = d["examples"] if check_value(d["examples"]) else "null"
+            param = d.get("parameter_name", None)
+            example = (
+                d.get("examples", None)
+                if check_value(d.get("examples", None))
+                else "null"
+            )
 
             # sample_name_(local_id)のみ、arrayとなる
             if param == "sample_name_(local_id)":
@@ -757,17 +889,22 @@ def _convert_invoice_example_impl(rtn_v):
 
         # sample_general - 資料情報（一般項目）
         category_name = "sample_general"
-        data_sample_g = [d for d in data_on if d["category"] == category_name]
+        data_sample_g = [d for d in data_on if d.get("category", None) == category_name]
 
         if data_sample_g:
             # 重複するパラメータがあればエラーを出す
             check_dup_params(data_sample_g, category_name, outfile)
+            check_req_params(data_sample_g, category_name, outfile)
 
             generalAttributes = []
 
             for d in data_sample_g:
-                param = d["parameter_name"]
-                example = d["examples"] if check_value(d["examples"]) else "null"
+                param = d.get("parameter_name", None)
+                example = (
+                    d.get("examples", None)
+                    if check_value(d.get("examples", None))
+                    else "null"
+                )
                 termIds = [x["term_id"] for x in data_gt if x["key_name"] == param]
                 if termIds:
                     d = {"termId": termIds[0], "value": example}
@@ -781,17 +918,22 @@ def _convert_invoice_example_impl(rtn_v):
 
         # sample_specific - 資料情報（分類別項目）
         category_name = "sample_specific"
-        data_sample_s = [d for d in data_on if d["category"] == category_name]
+        data_sample_s = [d for d in data_on if d.get("category", None) == category_name]
 
         if data_sample_s:
             # 重複するパラメータがあればエラーを出す
             check_dup_params(data_sample_s, category_name, outfile)
+            check_req_params(data_sample_s, category_name, outfile)
 
             specificAttributes = []
 
             for d in data_sample_s:
-                param = d["parameter_name"]
-                example = d["examples"] if check_value(d["examples"]) else "null"
+                param = d.get("parameter_name", None)
+                example = (
+                    d.get("examples", None)
+                    if check_value(d.get("examples", None))
+                    else "null"
+                )
                 classIds = [
                     x["sample_class_id"] for x in data_st if x["key_name"] == param
                 ]
@@ -865,125 +1007,129 @@ def _convert_catalog_schema_impl(rtn_v):
     jdata["properties"]["catalog"]["properties"] = defaultdict(dict)
 
     for d in data:
-        if d["output"] == "OFF":
+        if d.get("output", None) == "OFF":
             continue
 
-        jdata["properties"]["catalog"]["properties"][d["parameter_name"]] = defaultdict(
-            dict
+        jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)] = (
+            defaultdict(dict)
         )
-
         # 項目名(日本語)
-        jdata["properties"]["catalog"]["properties"][d["parameter_name"]]["label"][
-            "ja"
-        ] = d["label/ja"]
+        jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
+            "label"
+        ]["ja"] = d.get("label/ja", None)
         # 項目名(英語)
-        jdata["properties"]["catalog"]["properties"][d["parameter_name"]]["label"][
-            "en"
-        ] = d["label/en"]
+        jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
+            "label"
+        ]["en"] = d.get("label/en", None)
         # データ型
-        jdata["properties"]["catalog"]["properties"][d["parameter_name"]]["type"] = d[
+        jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
             "type"
-        ]
+        ] = d.get("type", None)
         # 必須項目
-        if check_value(d["required"], boolean=True):
-            jdata["properties"]["catalog"]["required"].append(d["parameter_name"])
+        if check_value(d.get("required", None), boolean=True):
+            jdata["properties"]["catalog"]["required"].append(
+                d.get("parameter_name", None)
+            )
         # フォーマット
-        if check_value(d["format"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("format", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "format"
-            ] = d["format"]
+            ] = d.get("format", None)
         # 説明
-        if check_value(d["description"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("description", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "description"
-            ] = d["description"]
+            ] = d.get("description", None)
         # 内容サンプル
-        if check_value(d["examples"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("examples", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "examples"
-            ] = convert_value(d["type"], d["examples"])
+            ] = convert_value(d.get("type", None), d.get("examples", None))
         # 初期値
-        if check_value(d["default"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("default", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "default"
-            ] = convert_value(d["type"], d["default"])
+            ] = convert_value(d.get("type", None), d.get("default", None))
         # 固定値
-        if check_value(d["const"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("const")):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "const"
-            ] = convert_value(d["type"], d["const"])
+            ] = convert_value(d.get("type", None), d.get("const"))
         # 値のリスト
-        if check_value(d["enum"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("enum", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "enum"
-            ] = [convert_value(d["type"], v) for v in d["enum"].split(",")]
+            ] = [
+                convert_value(d.get("type", None), v)
+                for v in d.get("enum", None).split(",")
+            ]
         # テキストエリア
-        if check_value(d["options/widget"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("options/widget", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "options"
-            ]["widget"] = d["options/widget"]
+            ]["widget"] = d.get("options/widget", None)
         # 行数
-        if check_value(d["options/rows"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("options/rows", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "options"
-            ]["rows"] = int(d["options/rows"])
+            ]["rows"] = int(d.get("options/rows", None))
         # 単位
-        if check_value(d["options/unit"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("options/unit", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "options"
-            ]["unit"] = d["options/unit"]
+            ]["unit"] = d.get("options/unit", None)
         # プレイスホルダ
-        if check_value(d["options/placeholder/ja"]) or check_value(
-            d["options/placeholder/en"]
+        if check_value(d.get("options/placeholder/ja", None)) or check_value(
+            d.get("options/placeholder/en", None)
         ):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "options"
             ]["placeholder"] = defaultdict(dict)
         # プレイスホルダ(日本語)
-        if check_value(d["options/placeholder/ja"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("options/placeholder/ja", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "options"
-            ]["placeholder"]["ja"] = d["options/placeholder/ja"]
+            ]["placeholder"]["ja"] = d.get("options/placeholder/ja", None)
         # プレイスホルダ(英語)
-        if check_value(d["options/placeholder/en"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("options/placeholder/en", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "options"
-            ]["placeholder"]["en"] = d["options/placeholder/en"]
+            ]["placeholder"]["en"] = d.get("options/placeholder/en", None)
         # 数値上限(以下)
-        if check_value(d["maximum"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("maximum", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "maximum"
-            ] = float(d["maximum"])
+            ] = float(d.get("maximum", None))
         # 数値上限(未満)
-        if check_value(d["exclusiveMaximum"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("exclusiveMaximum", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "exclusiveMaximum"
-            ] = float(d["exclusiveMaximum"])
+            ] = float(d.get("exclusiveMaximum", None))
         # 数値下限(以上)
-        if check_value(d["minimum"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("minimum", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "minimum"
-            ] = float(d["minimum"])
+            ] = float(d.get("minimum", None))
         # 数値下限(より上)
-        if check_value(d["exclusiveMinimum"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("exclusiveMinimum", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "exclusiveMinimum"
-            ] = float(d["exclusiveMinimum"])
+            ] = float(d.get("exclusiveMinimum", None))
         # 最大文字数
-        if check_value(d["maxLength"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("maxLength", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "maxLength"
-            ] = int(d["maxLength"])
+            ] = int(d.get("maxLength", None))
         # 最小文字数
-        if check_value(d["minLength"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("minLength", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "minLength"
-            ] = int(d["minLength"])
+            ] = int(d.get("minLength", None))
         # 正規表現
-        if check_value(d["pattern"]):
-            jdata["properties"]["catalog"]["properties"][d["parameter_name"]][
+        if check_value(d.get("pattern", None)):
+            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
                 "pattern"
-            ] = d["pattern"]
+            ] = d.get("pattern", None)
 
     # JSON形式で出力
     json_dump(jdata, outfile)
@@ -1007,13 +1153,12 @@ def _convert_catalog_example_impl(rtn_v):
     common_data, data, outfile = rtn_v
 
     # データを抽出する
-    data_on = [
-        d for d in data if check_value(d["parameter_name"]) and d["output"] == "ON"
-    ]
+    data_on = [d for d in data if d.get("output", None) == "ON"]
 
     # 重複するパラメータがあればエラーを出す
     category_name = "parameter_name"
     check_dup_params(data_on, category_name, outfile)
+    check_req_params(data_on, category_name, outfile)
 
     # json形式で整理する
     jdata = defaultdict(dict)
@@ -1021,7 +1166,7 @@ def _convert_catalog_example_impl(rtn_v):
     jdata["catalog"] = {}
 
     for d in data_on:
-        param = d["parameter_name"]
+        param = d.get("parameter_name", None)
         v = get_validated_value(param, d, expected_dtypes, outfile)
         jdata["catalog"][param] = v
 
@@ -1099,7 +1244,10 @@ def main():
             print(f" - 説明シートに記入漏れがありました。原因: {e}")
 
         # metadeta-def.jsonの出力
-        convert_metadata_def(wb, output_dir)
+        try:
+            convert_metadata_def(wb, output_dir)
+        except Exception as e:
+            print(f" - metadata-def.jsonの生成に失敗しました。原因: {e}")
 
         # invoice.schema.jsonの出力
         try:

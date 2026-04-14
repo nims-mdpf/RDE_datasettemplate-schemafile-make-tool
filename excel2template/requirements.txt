@@ -1,5 +1,13 @@
-openpyxl==3.1.5
-packaging==24.1
-python-dateutil==2.9.0.post0
-six==1.16.0
-pyinstaller>=6.10,<7
+# requirements.txt for excel2template.py
+# for python 3.13
+altgraph
+et_xmlfile
+importlib_metadata
+macholib
+openpyxl
+packaging
+python-dateutil
+six
+zipp
+# When building an executable using PyInstaller, install the following packages.
+# pyinstaller
