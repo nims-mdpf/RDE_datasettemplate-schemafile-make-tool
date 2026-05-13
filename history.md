@@ -1,5 +1,8 @@
 # 更新履歴
 
+- 2026/05/13
+  - excel2template v1.3.3を公開
+    - examples項目の出力をarray型に修正
 - 2026/04/14
   - excel2template v1.3.2を公開
     - テスト用のエクセル書式と実行結果を掲載

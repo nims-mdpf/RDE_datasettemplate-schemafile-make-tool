@@ -25,7 +25,9 @@
                     "type": "string",
                     "format": "date",
                     "description": "日付情報",
-                    "examples": "2026-04-02",
+                    "examples": [
+                        "2026-04-02"
+                    ],
                     "options": {
                         "placeholder": {
                             "ja": "日付情報を入力してください",
@@ -40,7 +42,9 @@
                     },
                     "type": "integer",
                     "description": "整数情報",
-                    "examples": 1,
+                    "examples": [
+                        1
+                    ],
                     "options": {
                         "unit": "unit"
                     },
@@ -53,7 +57,9 @@
                     },
                     "type": "number",
                     "description": "数値情報",
-                    "examples": 1.2,
+                    "examples": [
+                        1.2
+                    ],
                     "default": 1.2,
                     "const": 1.2
                 },
@@ -64,7 +70,10 @@
                     },
                     "type": "string",
                     "description": "文字列情報",
-                    "examples": "Aa123文字列",
+                    "examples": [
+                        "Aa123文字列",
+                        "xyz987文字列2"
+                    ],
                     "maxLength": 20
                 },
                 "my_textarea": {
@@ -74,7 +83,9 @@
                     },
                     "type": "string",
                     "description": "文字列テキストエリア",
-                    "examples": "テキストエリア",
+                    "examples": [
+                        "テキストエリア"
+                    ],
                     "options": {
                         "widget": "textarea",
                         "rows": 8
@@ -87,7 +98,9 @@
                     },
                     "type": "string",
                     "description": "選択項目",
-                    "examples": "a",
+                    "examples": [
+                        "a"
+                    ],
                     "enum": [
                         "a",
                         "b",
@@ -101,7 +114,9 @@
                     },
                     "type": "boolean",
                     "description": "真偽値",
-                    "examples": true
+                    "examples": [
+                        true
+                    ]
                 }
             }
         }

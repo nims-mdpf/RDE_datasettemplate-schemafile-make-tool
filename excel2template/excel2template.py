@@ -1,5 +1,6 @@
 # -------------------------------------------------
 # excel2template.py for RDE developers
+# version 1.3.3 2026/05/11
 # version 1.3.2 2026/04/14
 # version 1.3.1 2026/03/31
 # version 1.2.1 2026/01/07
@@ -12,7 +13,7 @@
 # -------------------------------------------------
 
 __author__ = "NIMS MDPF"
-__version__ = "1.3.2"
+__version__ = "1.3.3"
 __license__ = "MIT"
 
 from pathlib import Path
@@ -611,9 +612,9 @@ def _convert_invoice_schema_impl(rtn_v):
             if check_value(d.get("examples", None)):
                 jdata["properties"]["custom"]["properties"][
                     d.get("parameter_name", None)
-                ]["examples"] = convert_value(
-                    d.get("type", None), d.get("examples", None)
-                )
+                ]["examples"] = [
+                    convert_value(d.get("type", None), v) for v in d.get("examples", None).split(",")
+                ]
             # 初期値
             if check_value(d.get("default", None)):
                 jdata["properties"]["custom"]["properties"][
@@ -1042,9 +1043,11 @@ def _convert_catalog_schema_impl(rtn_v):
             ] = d.get("description", None)
         # 内容サンプル
         if check_value(d.get("examples", None)):
-            jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][
-                "examples"
-            ] = convert_value(d.get("type", None), d.get("examples", None))
+            jdata["properties"]["catalog"]["properties"][
+                    d.get("parameter_name", None)
+                ]["examples"] = [
+                    convert_value(d.get("type", None), v) for v in d.get("examples", None).split(",")
+            ]
         # 初期値
         if check_value(d.get("default", None)):
             jdata["properties"]["catalog"]["properties"][d.get("parameter_name", None)][

@@ -21,7 +21,9 @@
                         "en": "Dataset Title"
                     },
                     "type": "string",
-                    "examples": "dtaset_title"
+                    "examples": [
+                        "dtaset_title"
+                    ]
                 },
                 "data_creator": {
                     "label": {
@@ -29,7 +31,9 @@
                         "en": "Experimental Apparatus"
                     },
                     "type": "string",
-                    "examples": "experimental_apparatus",
+                    "examples": [
+                        "experimental_apparatus"
+                    ],
                     "options": {
                         "widget": "textarea",
                         "rows": 2
@@ -41,7 +45,9 @@
                         "en": "Data Distribution"
                     },
                     "type": "string",
-                    "examples": "data_distribution",
+                    "examples": [
+                        "data_distribution"
+                    ],
                     "options": {
                         "widget": "textarea",
                         "rows": 5
@@ -53,7 +59,9 @@
                         "en": "Raw Data Type"
                     },
                     "type": "string",
-                    "examples": "raw_data_type",
+                    "examples": [
+                        "raw_data_type"
+                    ],
                     "options": {
                         "widget": "textarea",
                         "rows": 5
@@ -65,7 +73,9 @@
                         "en": "Stored Data"
                     },
                     "type": "string",
-                    "examples": "stored_data",
+                    "examples": [
+                        "stored_data"
+                    ],
                     "options": {
                         "widget": "textarea",
                         "rows": 5
@@ -77,7 +87,9 @@
                         "en": "Remarks"
                     },
                     "type": "string",
-                    "examples": "remarks",
+                    "examples": [
+                        "remarks"
+                    ],
                     "options": {
                         "widget": "textarea",
                         "rows": 5
@@ -89,7 +101,9 @@
                         "en": "References"
                     },
                     "type": "string",
-                    "examples": "references",
+                    "examples": [
+                        "references"
+                    ],
                     "options": {
                         "widget": "textarea",
                         "rows": 5
