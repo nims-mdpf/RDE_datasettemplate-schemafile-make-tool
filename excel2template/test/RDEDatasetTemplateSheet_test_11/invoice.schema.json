@@ -25,7 +25,9 @@
                     "type": "string",
                     "format": "date",
                     "description": "日付情報2",
-                    "examples": "2026-04-02",
+                    "examples": [
+                        "2026-04-02"
+                    ],
                     "maximum": 1.0
                 },
                 "my_int": {
@@ -35,7 +37,9 @@
                     },
                     "type": "integer",
                     "description": "整数情報",
-                    "examples": 1
+                    "examples": [
+                        1
+                    ]
                 }
             }
         }

@@ -5,7 +5,7 @@
     "data_creator": "data_creator",
     "experimental_apparatus": "experimental_apparatus",
     "data_distribution": "data_distribution",
-    "raw_data_type": "raw_data_type",
+    "raw_data_type": "tiff,jpeg",
     "stored_data": "stored_data",
     "remarks": "remarks",
     "references": "references"
